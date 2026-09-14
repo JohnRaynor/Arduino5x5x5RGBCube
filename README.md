@@ -7,10 +7,10 @@ project inherits its editor, pattern-file and serial-protocol ideas from.
 
 ## Status
 
-**PC side written, hardware not started.** The wiring plan is done and the
-pattern editor, file format and serial module exist and are tested against a
-simulated cube. No LEDs have been bought yet and the Arduino sketch is not
-written. See [WORKLOG.md](WORKLOG.md) for progress.
+**Software written, hardware not started.** The wiring plan, the PC editor
+and the Arduino sketch all exist; the sketch compiles for the Nano and the PC
+side is tested against a model of it. No LEDs have been bought yet, so nothing
+has run on real hardware. See [WORKLOG.md](WORKLOG.md) for progress.
 
 ## The design decision
 
@@ -43,10 +43,10 @@ Schottky diode.
 | `rgb_cube_editor.py` | done | The pattern editor / simulator (below). |
 | `cube_layout.py` | done | `led_index(x, y, z)`: the one place the LED chain order is defined. Must match `ledIndex()` in the sketch. |
 | `patterns.py` | done | Read / write pattern files. |
-| `send_serial.py` | done | `CUBE` serial protocol: live preview and SD-card write. Untested against hardware until the sketch exists. |
+| `send_serial.py` | done | `CUBE` serial protocol: live preview and SD-card write. Tested against a model of the sketch, not yet against hardware. |
 | `make_sample_patterns.py` | done | Generates the files in `Patterns/`; also a worked example of building patterns in code. |
 | `Patterns/` | | Pattern files. `chain_test.bin` lights one LED at a time in chain order — the first thing to run on the real cube. |
-| `sketch/` | to do | Arduino sketch: FastLED driver, SD-card playback, the serial protocol. |
+| `sketch/rgb_cube/` | compiles | Arduino Nano sketch: FastLED driver, random SD-card playback, the serial protocol. |
 
 ## Requirements
 
@@ -54,7 +54,8 @@ Schottky diode.
 pip install pygame pyserial
 ```
 
-Arduino side (later): the **FastLED** and **SdFat** libraries.
+Arduino side: the **FastLED** and **SdFat** libraries (Library Manager), board
+*Arduino Nano*, processor *ATmega328P* (or *Old Bootloader* for clones).
 
 ## Running the editor
 
@@ -118,7 +119,60 @@ frame["colours"][led_index(x=2, y=0, z=4)] = [255, 80, 0]
 write_pattern("Patterns/example.bin", [frame])
 ```
 
+## The Arduino sketch
+
+`sketch/rgb_cube/rgb_cube.ino`. Open it in the Arduino IDE and upload. At the
+top of the file:
+
+| Define | Default | Change when |
+|---|---|---|
+| `LED_TYPE` | `APA106` | you bought PL9823s: set `PL9823`. |
+| `COLOR_ORDER` | `RGB` | red and green (or blue) come out swapped: try `GRB`. |
+| `DATA_PIN` | 6 | you wire the data line elsewhere. |
+| `SD_CS_PIN` | 3 | your SD module's chip select is on another pin. |
+| `MAX_MILLIAMPS` | 4000 | your supply is not 5 A. FastLED dims the whole cube so the total never exceeds this. |
+| `PREVIEW_HOLD_MS` | 60000 | you want the cube to hold the last previewed frame for longer or shorter before going back to random playback. |
+
+Pins: LED data on D6 through 330 Ω, SD card on hardware SPI (D11/D12/D13)
+with chip select D3.
+
+With no serial traffic the sketch plays files from the SD card root in random
+order, one after another. It keeps working without an SD card (it reports
+`ERR SD initialisation failed` once, then still answers previews).
+
+`ledIndex()` in the sketch is the same function as `led_index()` in
+`cube_layout.py`; if you change one, change the other.
+
+RAM: the Nano has 2 KB; the sketch uses about 1.5 KB for globals (375 for the
+LED buffer, 512 for SdFat's sector cache). That is why it uses only two SD
+file handles and writes incoming file bytes straight into SdFat's cache.
+
 ## Serial protocol
 
-Identical to the 4×4×4 project's `CUBE` protocol with 377-byte frames; see
-the docstring in `send_serial.py`. The sketch will be written to match.
+The 4×4×4 project's `CUBE` protocol with 377-byte frames, at **115200 baud**,
+plus two additions that the Nano's tiny serial buffer and FastLED make
+necessary:
+
+| Direction | Bytes | Meaning |
+|---|---|---|
+| PC → Arduino | 64 zero bytes | Before every command. `FastLED.show()` blocks the UART for ~4 ms, so bytes arriving then are lost; any received byte stops refreshes for 50 ms, and the zeros absorb the loss. |
+| Arduino → PC | `READY` | Sent after reset, and again after a `W` header has been accepted. |
+| PC → Arduino | `CUBE` `P` + 377-byte frame | Preview: show this frame for its display time. |
+| Arduino → PC | `FRAME` | The frame has been displayed for its time; the cube holds it and random playback stays paused until `R` or 60 s. |
+| PC → Arduino | `CUBE` `R` | Resume random SD playback. |
+| Arduino → PC | `RESUMED` | |
+| PC → Arduino | `CUBE` `W` + name length (1 byte) + name + size (4 bytes, little-endian) | Start an SD write. Size must be a multiple of 377. |
+| PC → Arduino | 64-byte block | File data, one block at a time. |
+| Arduino → PC | `NEXT` | Block written; send the next. Keeps at most one block in flight, because the Nano's receive buffer is 64 bytes and an SD sector write can stall for tens of ms. |
+| Arduino → PC | `DONE` | Last block written, file closed. |
+| Arduino → PC | `ERR …` | `unknown command`, `bad filename`, `bad size`, `no SD card`, `SD open failed`, `SD write failed`, `SD initialisation failed`. |
+
+## First power-up checklist
+
+1. Three LEDs on a breadboard, data from D6 via 330 Ω, upload the sketch.
+2. *Preview Cube* with `Patterns/chain_test.bin`: LEDs 0, 1, 2 should light in
+   turn, white. Wrong colour → change `COLOR_ORDER`. Nothing → check the leg
+   order against the datasheet, and that DIN is the leg you think it is.
+3. Build the cube; run `chain_test.bin` again: every LED lights once, in the
+   snake order shown in the wiring plan. A gap means a bad joint at that LED;
+   everything dark after some point means a break in the data chain there.

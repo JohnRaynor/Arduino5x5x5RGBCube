@@ -1,16 +1,22 @@
 """Serial link to the cube: preview frames live, or write a pattern to its SD card.
 
-Protocol (the same CUBE protocol as the 4x4x4 project, with 377-byte frames).
-Every command starts with the ASCII bytes CUBE so a frame byte can never be
-mistaken for a command; the Arduino replies with single-line ASCII messages.
+Protocol (the 4x4x4 project's CUBE protocol, with 377-byte frames, 115200
+baud, and two additions marked *).  Every command starts with the ASCII bytes
+CUBE so a frame byte can never be mistaken for a command; the Arduino replies
+with single-line ASCII messages.
 
+    PC -> Arduino  64 zero bytes *          before every command: FastLED.show()
+                                            blocks the UART for ~4 ms, so the
+                                            zeros absorb any lost bytes
     PC -> Arduino  CUBE P + one frame       preview this frame for its display time
     Arduino -> PC  FRAME                    frame finished; the cube holds it
     PC -> Arduino  CUBE R                   resume random SD playback
     Arduino -> PC  RESUMED
     PC -> Arduino  CUBE W + len + name + size (uint32 little-endian)   start SD write
     Arduino -> PC  READY                    send the file bytes now
-    Arduino -> PC  DONE                     file written and closed
+    PC -> Arduino  64-byte block            ... repeated
+    Arduino -> PC  NEXT *                   block written; send the next one
+    Arduino -> PC  DONE                     last block written, file closed
     Arduino -> PC  ERR ...                  something failed
 """
 import struct
@@ -20,7 +26,9 @@ import serial
 
 from patterns import FRAME_BYTES, encode_frame
 
-BAUD = 9600
+BAUD = 115200
+PREAMBLE = bytes(64)   # zeros
+BLOCK = 64
 SD_STEM_CHARS = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
 
 
@@ -75,18 +83,20 @@ def _connect(port):
     return ser
 
 
+def _command(ser, payload):
+    ser.write(PREAMBLE + payload)
+    ser.flush()
+
+
 def _send_preview(ser, data):
     for offset in range(0, len(data), FRAME_BYTES):
         frame = data[offset:offset + FRAME_BYTES]
-        ser.write(b"CUBEP" + frame)
-        ser.flush()
-        # 377 bytes at 9600 baud take ~0.4 s to arrive before the frame even starts.
+        _command(ser, b"CUBEP" + frame)
         _wait_for(ser, "FRAME", max(5, int.from_bytes(frame[-2:], "big") / 1000 + 3))
 
 
 def _resume_random(ser):
-    ser.write(b"CUBER")
-    ser.flush()
+    _command(ser, b"CUBER")
     _wait_for(ser, "RESUMED", 5)
 
 
@@ -119,10 +129,11 @@ def write_frames_to_sd(port, filename, frames):
     data = _encode_frames(frames)
     name = _sd_name(filename).encode("ascii")
     with _connect(port) as ser:
-        ser.write(b"CUBEW" + bytes([len(name)]) + name + struct.pack("<I", len(data)))
-        ser.flush()
+        _command(ser, b"CUBEW" + bytes([len(name)]) + name + struct.pack("<I", len(data)))
         _wait_for(ser, "READY", 5)
-        for offset in range(0, len(data), 64):
-            ser.write(data[offset:offset + 64])
-        ser.flush()
-        _wait_for(ser, "DONE", max(10, len(data) / 100 + 5))
+        for offset in range(0, len(data), BLOCK):
+            ser.write(data[offset:offset + BLOCK])
+            ser.flush()
+            if offset + BLOCK < len(data):
+                _wait_for(ser, "NEXT", 5)   # the Nano's serial buffer is 64 bytes: one block in flight
+        _wait_for(ser, "DONE", 10)
