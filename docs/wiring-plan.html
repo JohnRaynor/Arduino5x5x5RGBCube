@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>5×5×5 Addressable Cube Wiring</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper: #F4F6F8;
+    --panel: #FFFFFF;
+    --ink: #1B2330;
+    --muted: #5B6675;
+    --rule: #D5DBE3;
+    --head: #2F5D8A;
+    --v5: #C8372D;
+    --data: #E08A1E;
+    --led: #E9EDF1;
+    --code-bg: #E9EDF1;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #151A21; --panel: #1C232C; --ink: #E6EAF0; --muted: #97A3B3; --rule: #2C3541;
+      --head: #8DBBE8; --v5: #E8604F; --data: #F2A63A; --led: #2A333F; --code-bg: #232B36;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #151A21; --panel: #1C232C; --ink: #E6EAF0; --muted: #97A3B3; --rule: #2C3541;
+    --head: #8DBBE8; --v5: #E8604F; --data: #F2A63A; --led: #2A333F; --code-bg: #232B36;
+  }
+  body { background: var(--paper); color: var(--ink); font: 16px/1.55 "Source Sans 3", "Segoe UI", system-ui, sans-serif; margin: 0; }
+  main { max-width: 920px; margin: 0 auto; padding: 40px 24px 80px; }
+  h1, h2, h3 { font-family: "Barlow Semi Condensed", "Arial Narrow", sans-serif; color: var(--head); text-wrap: balance; line-height: 1.15; margin: 0; }
+  h1 { font-size: 40px; font-weight: 700; }
+  h2 { font-size: 26px; font-weight: 600; margin-top: 56px; padding-top: 16px; border-top: 2px solid var(--rule); }
+  h3 { font-size: 19px; font-weight: 600; color: var(--ink); margin-top: 28px; }
+  .lede { font-size: 18px; max-width: 68ch; color: var(--muted); margin: 12px 0 0; }
+  p, li { max-width: 68ch; }
+  p { margin: 12px 0; }
+  code, pre { font-family: "JetBrains Mono", Consolas, monospace; font-size: 14px; }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; }
+  pre { background: var(--code-bg); padding: 14px 16px; border-radius: 4px; overflow-x: auto; line-height: 1.5; }
+  pre code { background: none; padding: 0; }
+  figure { margin: 24px 0; }
+  figure svg { display: block; width: 100%; height: auto; max-width: 100%; color: var(--ink); }
+  figcaption { font-size: 14px; color: var(--muted); margin-top: 8px; max-width: 76ch; }
+  figcaption b { color: var(--ink); font-weight: 600; }
+  .wide { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 15px; margin: 16px 0; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-family: "Barlow Semi Condensed", sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+  td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .key { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 14px; color: var(--muted); margin: 6px 0 0; }
+  .key span::before { content: ""; display: inline-block; width: 22px; height: 0; border-top: 3px solid; margin-right: 8px; vertical-align: middle; }
+  .key .v5::before { border-color: var(--v5); }
+  .key .gnd::before { border-color: var(--ink); }
+  .key .dat::before { border-color: var(--data); }
+  ol.steps { padding-left: 0; list-style: none; counter-reset: step; }
+  ol.steps li { counter-increment: step; display: grid; grid-template-columns: 44px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--rule); max-width: none; }
+  ol.steps li::before { content: counter(step); font-family: "Barlow Semi Condensed", sans-serif; font-weight: 700; font-size: 26px; color: var(--head); line-height: 1; }
+  ol.steps li div { max-width: 68ch; }
+  .note { border-left: 3px solid var(--data); padding: 6px 14px; margin: 18px 0; background: var(--panel); max-width: 68ch; }
+  .note p { margin: 6px 0; }
+  a { color: var(--head); }
+  ul.refs li { margin: 6px 0; }
+  .meta { color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+
+<main>
+  <header>
+    <p class="meta">Arduino4x4Cube · next build · September 2026</p>
+    <h1>5×5×5 Addressable Cube Wiring</h1>
+    <p class="lede">A build plan for a 125-LED RGB cube using 4-leg addressable LEDs (APA106-F5 / PL9823-F5), driven by the existing Arduino Nano. No driver ICs, no layer transistors, three wires from the cube to the board. The structure is the one you already know from the 4×4×4: one leg stays vertical to make columns, the rest bend flat into each layer.</p>
+  </header>
+
+  <h2>The idea in one picture</h2>
+  <p>Every LED has four legs: <b>DIN</b>, <b>VDD</b>, <b>GND</b>, <b>DOUT</b>. VDD stays straight and is soldered to the VDD leg of the LED below it, so the 25 VDD legs in each column become the cube's vertical structure, exactly as the anode columns do now. GND bends toward the back and joins a rail running through each layer. DIN and DOUT bend sideways so each LED hands its data to its neighbour along the row.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 290" role="img" aria-label="Front and top views of one LED showing which way each of the four legs is bent: DIN left, VDD straight down, GND to the back, DOUT right.">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--data)"/>
+        </marker>
+        <marker id="ahi" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <!-- front view -->
+      <text x="150" y="24" font-size="13" font-weight="600" text-anchor="middle" fill="currentColor">FRONT VIEW</text>
+      <path d="M115,110 L115,75 A35,35 0 0 1 185,75 L185,110 Z" fill="var(--led)" stroke="currentColor" stroke-width="2"/>
+      <rect x="110" y="110" width="80" height="8" rx="2" fill="var(--led)" stroke="currentColor" stroke-width="2"/>
+      <!-- legs: DIN 128, VDD 143, GND 158, DOUT 173 -->
+      <polyline points="128,118 128,140 40,140" fill="none" stroke="var(--data)" stroke-width="3" marker-end="url(#ah)"/>
+      <line x1="143" y1="118" x2="143" y2="250" stroke="var(--v5)" stroke-width="3"/>
+      <line x1="158" y1="118" x2="158" y2="134" stroke="currentColor" stroke-width="3"/>
+      <circle cx="158" cy="140" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="158" cy="140" r="1.8" fill="currentColor"/>
+      <polyline points="173,118 173,140 260,140" fill="none" stroke="var(--data)" stroke-width="3" marker-end="url(#ah)"/>
+      <text x="36" y="132" font-size="12" text-anchor="start" fill="var(--data)">DIN</text>
+      <text x="36" y="158" font-size="11" text-anchor="start" fill="var(--muted)">from previous LED</text>
+      <text x="230" y="132" font-size="12" text-anchor="start" fill="var(--data)">DOUT</text>
+      <text x="230" y="158" font-size="11" text-anchor="start" fill="var(--muted)">to next LED</text>
+      <text x="143" y="268" font-size="12" text-anchor="middle" fill="var(--v5)">VDD</text>
+      <text x="143" y="283" font-size="11" text-anchor="middle" fill="var(--muted)">straight down · joins column</text>
+      <text x="172" y="165" font-size="12" text-anchor="start" fill="currentColor">GND</text>
+      <text x="172" y="180" font-size="11" text-anchor="start" fill="var(--muted)">bent away from you</text>
+      <!-- top view -->
+      <text x="540" y="24" font-size="13" font-weight="600" text-anchor="middle" fill="currentColor">TOP VIEW · leg row runs left–right</text>
+      <circle cx="540" cy="160" r="36" fill="var(--led)" stroke="currentColor" stroke-width="2"/>
+      <line x1="504" y1="160" x2="576" y2="160" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+      <!-- legs at 517.5, 532.5, 547.5, 562.5 -->
+      <polyline points="518,160 440,160" fill="none" stroke="var(--data)" stroke-width="3" marker-end="url(#ah)"/>
+      <circle cx="533" cy="160" r="6" fill="var(--v5)"/>
+      <polyline points="548,160 548,70" fill="none" stroke="currentColor" stroke-width="3" marker-end="url(#ahi)"/>
+      <polyline points="563,160 640,160" fill="none" stroke="var(--data)" stroke-width="3" marker-end="url(#ah)"/>
+      <text x="432" y="150" font-size="12" text-anchor="end" fill="var(--data)">DIN</text>
+      <text x="648" y="150" font-size="12" text-anchor="start" fill="var(--data)">DOUT</text>
+      <text x="556" y="66" font-size="12" text-anchor="start" fill="currentColor">GND → to the layer rail (back)</text>
+      <text x="533" y="215" font-size="12" text-anchor="middle" fill="var(--v5)">VDD (vertical, seen end-on)</text>
+      <text x="540" y="258" font-size="11" text-anchor="middle" fill="var(--muted)">Kink the GND leg 3–4 mm outward before the bend so the rail clears the VDD column.</text>
+    </svg>
+    <figcaption><b>Leg bend plan for every LED.</b> Order shown is the APA106-F5 order, DIN – VDD – GND – DOUT, with VDD the longest leg. PL9823-F5 listings show the same order but are notoriously mislabelled: light one LED on a breadboard and confirm before you bend 125 of them.</figcaption>
+  </figure>
+
+  <h2>One layer, seen from above</h2>
+  <p>Each layer is a 5×5 plane built on a jig (a board drilled at 25 mm pitch, like the one for the 4×4×4). Data snakes across the layer in a boustrophedon: front row left-to-right, next row right-to-left, and so on, so every DOUT reaches the DIN beside it with the LED's own legs. GND legs all point to the back and meet a bare-wire rail; the five rails are tied together along the back edge.</p>
+
+  <figure>
+    <svg viewBox="0 0 700 520" role="img" aria-label="Top view of one 5 by 5 layer: LEDs numbered 0 to 24 along a serpentine data path, five ground rails running front to back joined by a tie bar along the back edge, data entering at the front-left LED and leaving at the back-right LED.">
+      <defs>
+        <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--data)"/>
+        </marker>
+      </defs>
+      <!-- GND rails: x = col + 12, from y=48 to y=450 ; tie bar at y=48 -->
+      <g stroke="currentColor" stroke-width="3" fill="none">
+        <line x1="112" y1="48" x2="112" y2="452"/>
+        <line x1="202" y1="48" x2="202" y2="452"/>
+        <line x1="292" y1="48" x2="292" y2="452"/>
+        <line x1="382" y1="48" x2="382" y2="452"/>
+        <line x1="472" y1="48" x2="472" y2="452"/>
+        <line x1="100" y1="48" x2="560" y2="48"/>
+      </g>
+      <text x="565" y="52" font-size="12" fill="currentColor">GND tie bar (1 mm wire)</text>
+      <text x="565" y="68" font-size="11" fill="var(--muted)">one corner riser per layer</text>
+      <!-- GND leg stubs from each LED to its rail -->
+      <g stroke="currentColor" stroke-width="2.5">
+        <line x1="104" y1="420" x2="112" y2="420"/><line x1="194" y1="420" x2="202" y2="420"/><line x1="284" y1="420" x2="292" y2="420"/><line x1="374" y1="420" x2="382" y2="420"/><line x1="464" y1="420" x2="472" y2="420"/>
+        <line x1="104" y1="330" x2="112" y2="330"/><line x1="194" y1="330" x2="202" y2="330"/><line x1="284" y1="330" x2="292" y2="330"/><line x1="374" y1="330" x2="382" y2="330"/><line x1="464" y1="330" x2="472" y2="330"/>
+        <line x1="104" y1="240" x2="112" y2="240"/><line x1="194" y1="240" x2="202" y2="240"/><line x1="284" y1="240" x2="292" y2="240"/><line x1="374" y1="240" x2="382" y2="240"/><line x1="464" y1="240" x2="472" y2="240"/>
+        <line x1="104" y1="150" x2="112" y2="150"/><line x1="194" y1="150" x2="202" y2="150"/><line x1="284" y1="150" x2="292" y2="150"/><line x1="374" y1="150" x2="382" y2="150"/><line x1="464" y1="150" x2="472" y2="150"/>
+        <line x1="104" y1="60" x2="112" y2="60"/><line x1="194" y1="60" x2="202" y2="60"/><line x1="284" y1="60" x2="292" y2="60"/><line x1="374" y1="60" x2="382" y2="60"/><line x1="464" y1="60" x2="472" y2="60"/>
+      </g>
+      <!-- data path -->
+      <g stroke="var(--data)" stroke-width="3" fill="none" marker-end="url(#ah2)">
+        <!-- row 0 (front, y=420) left to right -->
+        <line x1="116" y1="420" x2="184" y2="420"/><line x1="206" y1="420" x2="274" y2="420"/><line x1="296" y1="420" x2="364" y2="420"/><line x1="386" y1="420" x2="454" y2="420"/>
+        <line x1="460" y1="404" x2="460" y2="346"/>
+        <!-- row 1 (y=330) right to left -->
+        <line x1="444" y1="330" x2="376" y2="330"/><line x1="354" y1="330" x2="286" y2="330"/><line x1="264" y1="330" x2="196" y2="330"/><line x1="174" y1="330" x2="106" y2="330"/>
+        <line x1="100" y1="314" x2="100" y2="256"/>
+        <!-- row 2 (y=240) -->
+        <line x1="116" y1="240" x2="184" y2="240"/><line x1="206" y1="240" x2="274" y2="240"/><line x1="296" y1="240" x2="364" y2="240"/><line x1="386" y1="240" x2="454" y2="240"/>
+        <line x1="460" y1="224" x2="460" y2="166"/>
+        <!-- row 3 (y=150) -->
+        <line x1="444" y1="150" x2="376" y2="150"/><line x1="354" y1="150" x2="286" y2="150"/><line x1="264" y1="150" x2="196" y2="150"/><line x1="174" y1="150" x2="106" y2="150"/>
+        <line x1="100" y1="134" x2="100" y2="76"/>
+        <!-- row 4 (y=60) -->
+        <line x1="116" y1="60" x2="184" y2="60"/><line x1="206" y1="60" x2="274" y2="60"/><line x1="296" y1="60" x2="364" y2="60"/><line x1="386" y1="60" x2="454" y2="60"/>
+        <!-- entry and exit -->
+        <line x1="30" y1="420" x2="84" y2="420"/>
+        <line x1="476" y1="60" x2="540" y2="60" stroke-dasharray="6 4"/>
+      </g>
+      <!-- LEDs -->
+      <g stroke="currentColor" stroke-width="2" fill="var(--led)">
+        <circle cx="100" cy="420" r="16"/><circle cx="190" cy="420" r="16"/><circle cx="280" cy="420" r="16"/><circle cx="370" cy="420" r="16"/><circle cx="460" cy="420" r="16"/>
+        <circle cx="100" cy="330" r="16"/><circle cx="190" cy="330" r="16"/><circle cx="280" cy="330" r="16"/><circle cx="370" cy="330" r="16"/><circle cx="460" cy="330" r="16"/>
+        <circle cx="100" cy="240" r="16"/><circle cx="190" cy="240" r="16"/><circle cx="280" cy="240" r="16"/><circle cx="370" cy="240" r="16"/><circle cx="460" cy="240" r="16"/>
+        <circle cx="100" cy="150" r="16"/><circle cx="190" cy="150" r="16"/><circle cx="280" cy="150" r="16"/><circle cx="370" cy="150" r="16"/><circle cx="460" cy="150" r="16"/>
+        <circle cx="100" cy="60" r="16"/><circle cx="190" cy="60" r="16"/><circle cx="280" cy="60" r="16"/><circle cx="370" cy="60" r="16"/><circle cx="460" cy="60" r="16"/>
+      </g>
+      <!-- VDD dots -->
+      <g fill="var(--v5)">
+        <circle cx="100" cy="428" r="3"/><circle cx="190" cy="428" r="3"/><circle cx="280" cy="428" r="3"/><circle cx="370" cy="428" r="3"/><circle cx="460" cy="428" r="3"/>
+        <circle cx="100" cy="338" r="3"/><circle cx="190" cy="338" r="3"/><circle cx="280" cy="338" r="3"/><circle cx="370" cy="338" r="3"/><circle cx="460" cy="338" r="3"/>
+        <circle cx="100" cy="248" r="3"/><circle cx="190" cy="248" r="3"/><circle cx="280" cy="248" r="3"/><circle cx="370" cy="248" r="3"/><circle cx="460" cy="248" r="3"/>
+        <circle cx="100" cy="158" r="3"/><circle cx="190" cy="158" r="3"/><circle cx="280" cy="158" r="3"/><circle cx="370" cy="158" r="3"/><circle cx="460" cy="158" r="3"/>
+        <circle cx="100" cy="68" r="3"/><circle cx="190" cy="68" r="3"/><circle cx="280" cy="68" r="3"/><circle cx="370" cy="68" r="3"/><circle cx="460" cy="68" r="3"/>
+      </g>
+      <!-- index numbers -->
+      <g font-size="11" font-family="JetBrains Mono, monospace" text-anchor="middle" fill="currentColor">
+        <text x="100" y="418">0</text><text x="190" y="418">1</text><text x="280" y="418">2</text><text x="370" y="418">3</text><text x="460" y="418">4</text>
+        <text x="460" y="328">5</text><text x="370" y="328">6</text><text x="280" y="328">7</text><text x="190" y="328">8</text><text x="100" y="328">9</text>
+        <text x="100" y="238">10</text><text x="190" y="238">11</text><text x="280" y="238">12</text><text x="370" y="238">13</text><text x="460" y="238">14</text>
+        <text x="460" y="148">15</text><text x="370" y="148">16</text><text x="280" y="148">17</text><text x="190" y="148">18</text><text x="100" y="148">19</text>
+        <text x="100" y="58">20</text><text x="190" y="58">21</text><text x="280" y="58">22</text><text x="370" y="58">23</text><text x="460" y="58">24</text>
+      </g>
+      <!-- labels -->
+      <text x="30" y="408" font-size="12" fill="var(--data)">DIN in</text>
+      <text x="545" y="64" font-size="12" fill="var(--data)">DOUT → layer above</text>
+      <text x="30" y="475" font-size="12" fill="var(--muted)">FRONT of cube</text>
+      <text x="30" y="36" font-size="12" fill="var(--muted)">BACK of cube</text>
+      <line x1="100" y1="500" x2="190" y2="500" stroke="currentColor" stroke-width="1" marker-start="url(#ahi)" marker-end="url(#ahi)"/>
+      <text x="145" y="514" font-size="11" text-anchor="middle" fill="var(--muted)">25 mm pitch</text>
+      <text x="380" y="500" font-size="11" fill="var(--muted)">red dot = VDD leg, vertical, seen end-on</text>
+    </svg>
+    <figcaption><b>Layer plan, identical for all five layers.</b> The chain enters at the front-left LED and leaves at the back-right one. Stack alternate layers rotated 180° so each layer's last LED sits directly under the next layer's first LED — then the layer-to-layer data jumper is only 25 mm.</figcaption>
+    <p class="key"><span class="dat">data (DIN → DOUT)</span><span class="gnd">GND rails and tie bar</span><span class="v5">VDD, vertical</span></p>
+  </figure>
+
+  <h2>The stack, seen from the side</h2>
+  <figure>
+    <svg viewBox="0 0 760 430" role="img" aria-label="Side elevation of the five stacked layers: red VDD columns rise from a 5 volt bar in the base through all five layers, each layer's ground rails connect through corner risers to a ground bar, and amber data jumpers link the end of each layer to the start of the next at alternating ends.">
+      <defs>
+        <marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--data)"/>
+        </marker>
+      </defs>
+      <!-- base bars -->
+      <rect x="130" y="352" width="440" height="8" fill="var(--v5)"/>
+      <text x="580" y="360" font-size="12" fill="var(--v5)">+5 V bar</text>
+      <rect x="96" y="386" width="508" height="8" fill="currentColor"/>
+      <text x="612" y="394" font-size="12" fill="currentColor">GND bar</text>
+      <!-- VDD columns -->
+      <g stroke="var(--v5)" stroke-width="3">
+        <line x1="150" y1="352" x2="150" y2="60"/><line x1="250" y1="352" x2="250" y2="60"/><line x1="350" y1="352" x2="350" y2="60"/><line x1="450" y1="352" x2="450" y2="60"/><line x1="550" y1="352" x2="550" y2="60"/>
+      </g>
+      <!-- GND layer rails (edge-on) and corner risers -->
+      <g stroke="currentColor" stroke-width="3">
+        <line x1="112" y1="300" x2="588" y2="300"/><line x1="112" y1="240" x2="588" y2="240"/><line x1="112" y1="180" x2="588" y2="180"/><line x1="112" y1="120" x2="588" y2="120"/><line x1="112" y1="60" x2="588" y2="60"/>
+        <line x1="112" y1="60" x2="112" y2="386"/><line x1="588" y1="60" x2="588" y2="386"/>
+      </g>
+      <!-- LEDs (front row only) -->
+      <g fill="var(--led)" stroke="currentColor" stroke-width="2">
+        <ellipse cx="150" cy="300" rx="14" ry="10"/><ellipse cx="250" cy="300" rx="14" ry="10"/><ellipse cx="350" cy="300" rx="14" ry="10"/><ellipse cx="450" cy="300" rx="14" ry="10"/><ellipse cx="550" cy="300" rx="14" ry="10"/>
+        <ellipse cx="150" cy="240" rx="14" ry="10"/><ellipse cx="250" cy="240" rx="14" ry="10"/><ellipse cx="350" cy="240" rx="14" ry="10"/><ellipse cx="450" cy="240" rx="14" ry="10"/><ellipse cx="550" cy="240" rx="14" ry="10"/>
+        <ellipse cx="150" cy="180" rx="14" ry="10"/><ellipse cx="250" cy="180" rx="14" ry="10"/><ellipse cx="350" cy="180" rx="14" ry="10"/><ellipse cx="450" cy="180" rx="14" ry="10"/><ellipse cx="550" cy="180" rx="14" ry="10"/>
+        <ellipse cx="150" cy="120" rx="14" ry="10"/><ellipse cx="250" cy="120" rx="14" ry="10"/><ellipse cx="350" cy="120" rx="14" ry="10"/><ellipse cx="450" cy="120" rx="14" ry="10"/><ellipse cx="550" cy="120" rx="14" ry="10"/>
+        <ellipse cx="150" cy="60" rx="14" ry="10"/><ellipse cx="250" cy="60" rx="14" ry="10"/><ellipse cx="350" cy="60" rx="14" ry="10"/><ellipse cx="450" cy="60" rx="14" ry="10"/><ellipse cx="550" cy="60" rx="14" ry="10"/>
+      </g>
+      <!-- data: entry and layer jumpers at alternating ends -->
+      <g stroke="var(--data)" stroke-width="3" fill="none" marker-end="url(#ah3)">
+        <line x1="40" y1="300" x2="132" y2="300"/>
+        <line x1="568" y1="292" x2="568" y2="250"/>
+        <line x1="132" y1="232" x2="132" y2="190"/>
+        <line x1="568" y1="172" x2="568" y2="130"/>
+        <line x1="132" y1="112" x2="132" y2="70"/>
+      </g>
+      <text x="40" y="288" font-size="12" fill="var(--data)">Nano D6 → 330 Ω → DIN</text>
+      <text x="600" y="275" font-size="11" fill="var(--data)">layer 0 → 1</text>
+      <text x="600" y="155" font-size="11" fill="var(--data)">layer 2 → 3</text>
+      <!-- layer labels -->
+      <g font-size="12" fill="var(--muted)" text-anchor="end">
+        <text x="90" y="304">layer 0</text><text x="90" y="244">layer 1</text><text x="90" y="184">layer 2</text><text x="90" y="124">layer 3</text><text x="90" y="64">layer 4</text>
+      </g>
+      <text x="350" y="415" font-size="12" text-anchor="middle" fill="var(--muted)">Base: 25 VDD columns land on the +5 V bar; the two corner GND risers land on the GND bar. Columns must not touch the GND bar.</text>
+    </svg>
+    <figcaption><b>Elevation, front row of columns only.</b> Every column is fed 5 V from the base, so no LED is more than five LEDs from the supply through a leg. GND returns through each layer's rails to risers at two (better, four) corners. Layers alternate the side on which the data jumper climbs because alternate layers are rotated 180°.</figcaption>
+  </figure>
+
+  <h2>Controller and power</h2>
+  <figure>
+    <svg viewBox="0 0 760 300" role="img" aria-label="Schematic: a 5 volt 5 amp supply feeds the cube's 5 volt and ground bars with a 1000 microfarad capacitor across them near the cube; the Nano's ground joins the same ground; the Nano's 5 volt pin is fed through a Schottky diode; the Nano's D6 pin drives the cube's DIN through a 330 ohm resistor; the SD card module hangs off the Nano as it does today.">
+      <defs>
+        <marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="var(--data)"/>
+        </marker>
+      </defs>
+      <!-- PSU -->
+      <rect x="30" y="80" width="130" height="90" rx="4" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
+      <text x="95" y="112" font-size="14" font-weight="600" text-anchor="middle" fill="currentColor">5 V 5 A PSU</text>
+      <text x="95" y="132" font-size="11" text-anchor="middle" fill="var(--muted)">2.1 mm DC jack</text>
+      <text x="95" y="150" font-size="11" text-anchor="middle" fill="var(--muted)">+5 V / GND out</text>
+      <!-- cube -->
+      <rect x="560" y="40" width="170" height="140" rx="4" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
+      <text x="645" y="70" font-size="14" font-weight="600" text-anchor="middle" fill="currentColor">CUBE</text>
+      <text x="645" y="92" font-size="11" text-anchor="middle" fill="var(--muted)">125 × APA106-F5</text>
+      <text x="580" y="126" font-size="12" fill="var(--v5)">+5 V bar</text>
+      <text x="580" y="152" font-size="12" fill="var(--data)">DIN (layer 0, LED 0)</text>
+      <text x="580" y="174" font-size="12" fill="currentColor">GND bar</text>
+      <!-- Nano -->
+      <rect x="300" y="190" width="200" height="90" rx="4" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
+      <text x="400" y="214" font-size="14" font-weight="600" text-anchor="middle" fill="currentColor">ARDUINO NANO</text>
+      <text x="312" y="238" font-size="12" fill="var(--v5)">5V pin</text>
+      <text x="312" y="258" font-size="12" fill="currentColor">GND</text>
+      <text x="312" y="275" font-size="12" fill="var(--data)">D6</text>
+      <text x="488" y="238" font-size="11" text-anchor="end" fill="var(--muted)">USB → PC editor</text>
+      <text x="488" y="258" font-size="11" text-anchor="end" fill="var(--muted)">SD module on SPI, CS = D3</text>
+      <text x="488" y="275" font-size="11" text-anchor="end" fill="var(--muted)">(unchanged)</text>
+      <!-- +5V rail -->
+      <line x1="160" y1="100" x2="560" y2="100" stroke="var(--v5)" stroke-width="3"/>
+      <line x1="560" y1="100" x2="560" y2="122" stroke="var(--v5)" stroke-width="3"/>
+      <!-- GND rail -->
+      <line x1="160" y1="160" x2="560" y2="160" stroke="currentColor" stroke-width="3"/>
+      <line x1="560" y1="160" x2="560" y2="170" stroke="currentColor" stroke-width="3"/>
+      <!-- capacitor near cube -->
+      <line x1="500" y1="100" x2="500" y2="122" stroke="currentColor" stroke-width="2"/>
+      <line x1="488" y1="122" x2="512" y2="122" stroke="currentColor" stroke-width="3"/>
+      <line x1="488" y1="130" x2="512" y2="130" stroke="currentColor" stroke-width="3"/>
+      <line x1="500" y1="130" x2="500" y2="160" stroke="currentColor" stroke-width="2"/>
+      <text x="470" y="145" font-size="11" text-anchor="end" fill="var(--muted)">1000 µF 10 V, as close to the cube as you can</text>
+      <!-- Nano 5V feed via Schottky -->
+      <line x1="230" y1="100" x2="230" y2="235" stroke="var(--v5)" stroke-width="2"/>
+      <polygon points="222,180 238,180 230,196" fill="var(--v5)"/>
+      <line x1="222" y1="196" x2="238" y2="196" stroke="var(--v5)" stroke-width="2"/>
+      <line x1="230" y1="235" x2="300" y2="235" stroke="var(--v5)" stroke-width="2"/>
+      <text x="244" y="192" font-size="11" fill="var(--muted)">1N5819</text>
+      <!-- Nano GND -->
+      <line x1="270" y1="160" x2="270" y2="255" stroke="currentColor" stroke-width="2"/>
+      <line x1="270" y1="255" x2="300" y2="255" stroke="currentColor" stroke-width="2"/>
+      <!-- data D6 -> 330R -> DIN -->
+      <line x1="500" y1="272" x2="520" y2="272" stroke="var(--data)" stroke-width="3"/>
+      <rect x="520" y="265" width="30" height="14" fill="var(--panel)" stroke="var(--data)" stroke-width="2"/>
+      <text x="535" y="292" font-size="11" text-anchor="middle" fill="var(--muted)">330 Ω</text>
+      <polyline points="550,272 575,272 575,140" fill="none" stroke="var(--data)" stroke-width="3"/>
+      <line x1="575" y1="148" x2="575" y2="140" stroke="var(--data)" stroke-width="3" marker-end="url(#ah4)"/>
+      <text x="360" y="90" font-size="12" fill="var(--v5)">+5 V — 1.5 mm² wire, keep short</text>
+      <text x="360" y="177" font-size="12" fill="currentColor">GND — common to PSU, cube and Nano</text>
+    </svg>
+    <figcaption><b>Controller wiring.</b> The cube is powered straight from the supply, never through the Nano. The Schottky diode lets the Nano run from the same supply when the USB lead is unplugged, and stops the supply back-feeding the PC when it is plugged in. No level shifter: the Nano is 5 V logic.</figcaption>
+  </figure>
+
+  <div class="note">
+    <p><b>Power budget.</b> 125 LEDs × 60 mA (full white) = 7.5 A worst case. Don't buy a 10 A supply — cap it in software with <code>FastLED.setMaxPowerInVoltsAndMilliamps(5, 4000)</code>, which scales brightness so the cube never asks for more than 4 A, and use a 5 A supply. Typical patterns draw well under 1 A.</p>
+    <p><b>Serial and SD.</b> <code>FastLED.show()</code> turns interrupts off for ~3.8 ms while it clocks out 125 LEDs. At 9600 baud that can drop bytes arriving during an SD transfer, so the sketch must not refresh the cube while a <code>CUBEW</code> transfer is running. Previews are already paced by the <code>FRAME</code> handshake, so they are unaffected.</p>
+  </div>
+
+  <h2>Parts</h2>
+  <div class="wide">
+  <table>
+    <thead><tr><th>Qty</th><th>Part</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td class="n">135</td><td>APA106-F5 or PL9823-F5 addressable 5 mm RGB LED</td><td>125 needed; spares matter because a dead LED breaks the chain past it. F8 (8 mm) versions exist if you want a bigger cube. Test every one on a breadboard before bending.</td></tr>
+      <tr><td class="n">3 m</td><td>1 mm tinned copper wire</td><td>GND rails (5 per layer × 100 mm), tie bars, corner risers, base bars.</td></tr>
+      <tr><td class="n">1</td><td>5 V 5 A power supply, 2.1 mm jack</td><td>Regulated switch-mode; not a USB charger.</td></tr>
+      <tr><td class="n">1</td><td>1000 µF 10 V electrolytic</td><td>Across +5 V / GND at the cube.</td></tr>
+      <tr><td class="n">1</td><td>330 Ω resistor</td><td>In series with the data line, at the Nano end.</td></tr>
+      <tr><td class="n">1</td><td>1N5819 Schottky diode</td><td>PSU +5 V → Nano 5V pin.</td></tr>
+      <tr><td class="n">1</td><td>Arduino Nano + SD module</td><td>The ones you have.</td></tr>
+      <tr><td class="n">1</td><td>Jig: 120 × 120 mm board drilled 5 × 5 at 25 mm, 5 mm holes</td><td>Or print the <a href="https://github.com/BigJBehr/Arduino-based-4x4x4-LED-Cube/tree/master/3D%20Parts">Cubic Art bending jig</a> scaled to 5 × 5.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h2>Build order</h2>
+  <ol class="steps">
+    <li><div><b>Test every LED.</b> Chain three on a breadboard with the Nano and FastLED's <code>APA106</code> (or <code>PL9823</code>) type, and confirm the leg order and colour order. This is the step that saves the build.</div></li>
+    <li><div><b>Bend to the plan.</b> For each LED: DIN left, DOUT right, GND kinked 3–4 mm outward then to the back, VDD straight. Do all 125 the same way with a small bending jig so the layers come out flat.</div></li>
+    <li><div><b>Build five identical layers on the jig.</b> Press 25 LEDs into the jig, solder DOUT to DIN along each row, jumper the row ends to make the serpentine, lay a rail along each column of GND legs, and tie the five rails along the back edge. Lift out, check every joint, power it up and run a chase pattern through all 25 before moving on.</div></li>
+    <li><div><b>Stack.</b> Put layer 0 on the base, layer 1 on top rotated 180°, layer 2 unrotated, and so on. Solder each VDD leg to the one below to make the 25 columns — exactly the anode-column job from the 4×4×4. Use spacers (or the jig) to hold 25 mm between layers.</div></li>
+    <li><div><b>Data jumpers.</b> Four short wires, each from a layer's LED 24 up to the next layer's LED 0 directly above it.</div></li>
+    <li><div><b>GND risers.</b> A 1 mm wire down each of two opposite corners (four corners is better), soldered to every layer's tie bar, into the base GND bar.</div></li>
+    <li><div><b>Base.</b> +5 V bar under the 25 columns, GND bar under the risers, capacitor across them, then the Nano, diode, resistor and jack as in the schematic.</div></li>
+  </ol>
+
+  <h2>Software: mapping x, y, z to a chain index</h2>
+  <pre><code>#include &lt;FastLED.h&gt;
+#define DATA_PIN 6
+#define NUM_LEDS 125
+CRGB leds[NUM_LEDS];
+
+// x: left→right, y: front→back, z: bottom→top, all 0..4
+uint8_t ledIndex(uint8_t x, uint8_t y, uint8_t z) {
+  if (z &amp; 1) { x = 4 - x; y = 4 - y; }   // odd layers are stacked rotated 180°
+  uint8_t col = (y &amp; 1) ? 4 - x : x;     // serpentine within the layer
+  return z * 25 + y * 5 + col;
+}
+
+void setup() {
+  FastLED.addLeds&lt;APA106, DATA_PIN, RGB&gt;(leds, NUM_LEDS);   // PL9823 for those LEDs
+  FastLED.setMaxPowerInVoltsAndMilliamps(5, 4000);
+}</code></pre>
+  <p>The pattern file grows from 10 bytes a frame to 377 (125 × RGB + the 2-byte time), and the editor needs a colour picker instead of on/off — but the serial protocol, the SD transfer and the playlist all carry over unchanged apart from the frame size.</p>
+
+  <h2>Builds to look at</h2>
+  <p>Photos and diagrams of the same idea at other sizes, all with 4-leg addressable LEDs:</p>
+  <ul class="refs">
+    <li><a href="https://www.instructables.com/id/Cubic-Art/">Cubic Art — 4×4×4 APA106 cube, 32 steps with photos</a>: layers built on a printed jig, then stacked. The closest documented precedent.</li>
+    <li><a href="https://github.com/BigJBehr/Arduino-based-4x4x4-LED-Cube">Cubic Art source repository</a>: <code>Diagrams/Nano Wiring.pdf</code> and <code>Diagrams/Wiring.pdf</code> are full wiring drawings; <code>3D Parts/LedCubeJig.stl</code> is the bending/soldering jig.</li>
+    <li><a href="https://forum.makerforums.info/t/i-built-an-led-cube-using-pl9823-8x8x8-for-a-total-of-512-diodes/58787">8×8×8 PL9823 cube, 512 LEDs</a>: build photos and the FastLED discussion, showing the approach scales.</li>
+    <li><a href="https://www.printables.com/model/784699-4x4x4-pl9823-led-cube-base">4×4×4 PL9823 cube base (Printables)</a>: a printable base, useful for the connector and jack layout.</li>
+    <li><a href="https://www.flickr.com/photos/surrealitylabs/14892753438">PL9823-F5 pinout photo (Surreality Labs)</a> and their <a href="http://surrealitylabs.com/2014/08/playing-with-the-pl9823-f5-a-breadboardable-neopixel-compatible-led/">breadboard write-up</a>: the lead order, photographed, because the listings get it wrong.</li>
+    <li><a href="https://www.digikey.com/en/datasheets/sparkfun-electronics/sparkfun-electronics-com-12877">APA106-F5/F8 datasheet (SparkFun via DigiKey)</a>: timing, current and the DIN–VDD–GND–DOUT pin order.</li>
+  </ul>
+</main>
+</body>
+</html>
