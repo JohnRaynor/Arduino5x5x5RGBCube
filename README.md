@@ -7,8 +7,10 @@ project inherits its editor, pattern-file and serial-protocol ideas from.
 
 ## Status
 
-**Design stage.** The wiring plan is done; no hardware has been built and no
-code written yet. See [WORKLOG.md](WORKLOG.md) for progress.
+**PC side written, hardware not started.** The wiring plan is done and the
+pattern editor, file format and serial module exist and are tested against a
+simulated cube. No LEDs have been bought yet and the Arduino sketch is not
+written. See [WORKLOG.md](WORKLOG.md) for progress.
 
 ## The design decision
 
@@ -33,26 +35,90 @@ jumper is only 25 mm. The cube is powered directly from a 5 V 5 A supply with
 a software current cap; the Nano runs from USB or the same supply via a
 Schottky diode.
 
-## Planned layout
+## Layout
 
-| Path | Purpose |
-|---|---|
-| `docs/wiring-plan.html` | Hardware plan: leg bends, layer serpentine, stack, controller schematic, parts, build order. |
-| `sketch/` | Arduino sketch: FastLED driver, SD-card playback, `CUBE` serial protocol from the 4×4×4 project extended to RGB frames. |
-| `Patterns/` | RGB pattern files. |
-| (PC editor) | RGB version of the 4×4×4 editor: colour picker per LED, same block/playlist tools. |
-
-## Pattern file format (proposed)
-
-Same idea as the 4×4×4 format, scaled up: a plain sequence of frames with no
-header, **377 bytes per frame**.
-
-| Bytes | Content |
-|---|---|
-| 0 – 374 | 125 × (R, G, B), one byte each, in chain order (see `ledIndex()` in the wiring plan). |
-| 375 – 376 | Display time in milliseconds, big-endian. |
+| Path | Status | Purpose |
+|---|---|---|
+| `docs/wiring-plan.html` | done | Hardware plan: leg bends, layer serpentine, stack, controller schematic, parts, build order. |
+| `rgb_cube_editor.py` | done | The pattern editor / simulator (below). |
+| `cube_layout.py` | done | `led_index(x, y, z)`: the one place the LED chain order is defined. Must match `ledIndex()` in the sketch. |
+| `patterns.py` | done | Read / write pattern files. |
+| `send_serial.py` | done | `CUBE` serial protocol: live preview and SD-card write. Untested against hardware until the sketch exists. |
+| `make_sample_patterns.py` | done | Generates the files in `Patterns/`; also a worked example of building patterns in code. |
+| `Patterns/` | | Pattern files. `chain_test.bin` lights one LED at a time in chain order — the first thing to run on the real cube. |
+| `sketch/` | to do | Arduino sketch: FastLED driver, SD-card playback, the serial protocol. |
 
 ## Requirements
 
-- Arduino IDE with the **FastLED** and **SdFat** libraries.
-- Python 3 with `pygame` and `pyserial` for the editor (when written).
+```bash
+pip install pygame pyserial
+```
+
+Arduino side (later): the **FastLED** and **SdFat** libraries.
+
+## Running the editor
+
+```bash
+python rgb_cube_editor.py
+```
+
+The window shows the cube as five rows of 25 dots, one row per layer with the
+top layer at the top; within a row the 25 dots are the 5×5 layer seen at an
+angle, front row lowest. Unlit LEDs are drawn dark grey.
+
+- **Left-click** a dot to paint it with the paint colour; **right-click** to
+  switch it off.
+- The **palette** (bottom left) sets the hue; the row under it sets the
+  brightness (100 / 50 / 25 / 10 %). The preview box shows the resulting paint
+  colour. **Custom…** opens the system colour picker.
+- **Fill layer / Clear layer** act on the layer of the last dot you clicked
+  (shown as *Layer n*). **Fill all / Clear all** act on the whole frame.
+
+Everything else is the same as the 4×4×4 editor:
+
+| Button | What it does |
+|---|---|
+| **New** | Start again with a single blank frame (asks first). |
+| **Open File** / **Write File** | Load / save a `.bin` pattern file. |
+| **<** / **>** | Step to the previous / next frame. |
+| **copy Frame** | Insert a copy of the current frame in front of it. |
+| **Play File** / **Stop** | Loop through all frames on screen using each frame's display time. |
+| **▲** / **▼** | Slow down / speed up the current frame by about 20 % (5 – 65535 ms). |
+| **Apply to all frames** | Copy the current frame's display time to every frame. |
+| **Start** / **End** / **Clear** | Mark a block of frames; with no block set, block operations act on the current frame. |
+| **Copy** / **Cut** / **Paste** / **Reverse** | Copy the block; cut (delete) it; insert the copy after the current frame; reverse its play order. |
+| **Preview Cube** | Play the frames on the physical cube over serial. Needs the sketch. |
+| **Save to SD** | Save the pattern locally, then write it under the same 8.3 name to the cube's SD card. Needs the sketch. |
+| **Playlist** | Choose several `.bin` files, order them, and load them as one pattern. |
+
+The serial port is asked for once and remembered in `.led_cube_settings.json`.
+
+## Pattern file format
+
+A plain sequence of frames with no header, **377 bytes per frame**. A
+trailing partial frame is ignored on load.
+
+| Bytes | Content |
+|---|---|
+| 0 – 374 | 125 × (R, G, B), one byte each, in LED chain order — index `led_index(x, y, z)` from `cube_layout.py`. |
+| 375 – 376 | Display time in milliseconds, big-endian. |
+
+Chain order: data snakes through each layer (row 0 left-to-right, row 1
+right-to-left, …) and alternate layers are rotated 180°, so every consecutive
+pair of LEDs in the chain is physically adjacent. `cube_layout.py` checks this.
+
+To build patterns in code:
+
+```python
+from cube_layout import led_index
+from patterns import new_frame, write_pattern
+
+frame = new_frame(time_ms=100)
+frame["colours"][led_index(x=2, y=0, z=4)] = [255, 80, 0]
+write_pattern("Patterns/example.bin", [frame])
+```
+
+## Serial protocol
+
+Identical to the 4×4×4 project's `CUBE` protocol with 377-byte frames; see
+the docstring in `send_serial.py`. The sketch will be written to match.
