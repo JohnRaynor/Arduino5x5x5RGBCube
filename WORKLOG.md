@@ -21,3 +21,11 @@
 - Protocol changes versus the 4×4×4: 115200 baud; 64 zero bytes before every command (FastLED.show() blocks the UART for ~4 ms); `NEXT` acknowledgement per 64-byte block during SD writes. `send_serial.py` updated to match and tested against a Python model of the sketch's state machine.
 - Compiled with the IDE's bundled arduino-cli for `arduino:avr:nano`: 18.8 KB flash, 1507 B RAM globals (541 B free). Got there from 1615 B by using two `File32` handles instead of four and dropping the file buffer. FastLED 3.10.5 installed into the Arduino libraries folder.
 - Not run on hardware.
+
+## 2026-09-16
+
+- Decided patterns will mostly be generated in code rather than click-painted.
+- `patterngen.py`: named regions as sets of chain indices (`plane`, `layer`, `column`, `line`, `shell`/`OUTER`/`MIDDLE`/`CENTRE`, `cube`, `square`, `ball`, faces, `EDGES`, `CORNERS`, `select`) and a `Scene` with `paint`, `clear`, `scale`, `hold`, `fade`, `fade_in`, `fade_out`, `morph`, `extend`. Self-checks in its `__main__`.
+- `make_sample_patterns.py`: `GENERATORS` registry; `fade_all` (John's) rewritten on the Scene; new `shells` and `plane_sweep` examples.
+- Editor: **Generate…** button lists the generators and loads frames directly, reloading `patterngen` and `make_sample_patterns` first so edits are picked up without restarting; generator exceptions are shown in a dialog. Tested headlessly (load, reload-on-edit, failure leaves frames intact) and the button checked in the real window.
+- PSU chosen: a 5 V 10 A desktop brick (COOLM, Amazon B0G2RXZG5K); cap at ~5 A in the sketch and terminate the lead in a screw block rather than a barrel socket.

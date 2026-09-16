@@ -44,7 +44,8 @@ Schottky diode.
 | `cube_layout.py` | done | `led_index(x, y, z)`: the one place the LED chain order is defined. Must match `ledIndex()` in the sketch. |
 | `patterns.py` | done | Read / write pattern files. |
 | `send_serial.py` | done | `CUBE` serial protocol: live preview and SD-card write. Tested against a model of the sketch, not yet against hardware. |
-| `make_sample_patterns.py` | done | Generates the files in `Patterns/`; also a worked example of building patterns in code. |
+| `patterngen.py` | done | Building patterns in code: named regions (planes, columns, shells, faces…) and a `Scene` that paints and fades them. |
+| `make_sample_patterns.py` | done | The pattern generators. Each appears in the editor's **Generate…** dialog and is written to `Patterns/` when run. |
 | `Patterns/` | | Pattern files. `chain_test.bin` lights one LED at a time in chain order — the first thing to run on the real cube. |
 | `sketch/rgb_cube/` | compiles | Arduino Nano sketch: FastLED driver, random SD-card playback, the serial protocol. |
 
@@ -91,6 +92,7 @@ Everything else is the same as the 4×4×4 editor:
 | **Preview Cube** | Play the frames on the physical cube over serial. Needs the sketch. |
 | **Save to SD** | Save the pattern locally, then write it under the same 8.3 name to the cube's SD card. Needs the sketch. |
 | **Playlist** | Choose several `.bin` files, order them, and load them as one pattern. |
+| **Generate…** | Pick a generator from `make_sample_patterns.py` and load its frames directly, no file needed. The generator code is reloaded every time, so edit, save, click Generate. |
 
 The serial port is asked for once and remembered in `.led_cube_settings.json`.
 
@@ -108,7 +110,49 @@ Chain order: data snakes through each layer (row 0 left-to-right, row 1
 right-to-left, …) and alternate layers are rotated 180°, so every consecutive
 pair of LEDs in the chain is physically adjacent. `cube_layout.py` checks this.
 
-To build patterns in code:
+## Building patterns in code
+
+Painting 125 LEDs a frame at a time by hand is slow; most patterns are better
+generated. Write a function in `make_sample_patterns.py` that returns a list of
+frames, add it to `GENERATORS`, and it appears in the editor's **Generate…**
+dialog. `patterngen.py` provides the building blocks:
+
+```python
+from patterngen import *
+
+def my_pattern():
+    scene = Scene(time_ms=50)                 # default display time per frame
+    scene.paint(OUTER, RED)                   # change the working frame...
+    scene.hold(500)                           # ...and capture it, shown for 500 ms
+    scene.fade_in(MIDDLE, BLUE, steps=20)     # 20 frames, MIDDLE from black to blue
+    scene.fade(CENTRE, WHITE, steps=10)       # from whatever it is now to white
+    scene.paint(plane("x", 0) | column(4, 4), GREEN)
+    scene.hold()
+    scene.fade_out(ALL, steps=30)
+    return scene.frames
+```
+
+Regions are sets of chain indices, so they combine with `|`, `&` and `-`:
+
+| Region | LEDs |
+|---|---|
+| `ALL` | everything |
+| `plane("x" / "y" / "z", n)` | the 25 LEDs with that coordinate; `layer(z)` = `plane("z", z)` |
+| `column(x, y)` | the 5 LEDs stacked at (x, y) |
+| `line("x", y=2, z=4)` | 5 LEDs along one axis, the other two coordinates given |
+| `OUTER`, `MIDDLE`, `CENTRE` | the 98-LED surface, the 26-LED shell inside it, the centre LED (`shell(2/1/0)`) |
+| `cube(n)` | solid cube of side 2n+1 around the centre |
+| `square(z, n)` | on layer z, the square ring n out from the centre |
+| `ball(r)` | LEDs within r of the centre |
+| `face("top")` etc., `EDGES`, `CORNERS` | the six faces, the 12 edges, the 8 corners |
+| `select(lambda x, y, z: x == y)` | anything else |
+
+Axes: x left–right, y front–back, z bottom–top, each 0–4. Colours are `(r, g, b)`
+tuples — `RED`, `BLUE`, … are predefined, `hsv(h)` gives a hue, `dim(colour, 0.3)`
+scales one. `Scene.scale(region, 0.5)` halves the brightness of what is already
+lit (good for trails), `Scene.morph(frame, steps)` cross-fades the whole cube
+to another frame, and `Scene.extend(frames)` appends frames built the low-level
+way:
 
 ```python
 from cube_layout import led_index

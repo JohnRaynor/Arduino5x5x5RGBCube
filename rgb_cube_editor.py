@@ -5,8 +5,10 @@ it off.  A pattern is a list of frames; see patterns.py for the file format
 and send_serial.py for the link to the cube.
 """
 import copy
+import importlib
 import json
 import sys
+import traceback
 import tkinter as tk
 from pathlib import Path
 from tkinter import colorchooser, filedialog, messagebox, simpledialog
@@ -289,6 +291,59 @@ def quit_pressed():
     pygame.quit()
     sys.exit()
 
+# ------------------------------------------------------------- generate ----
+GENERATOR_MODULES = ["patterngen", "make_sample_patterns"]   # reloaded on every Generate...
+
+def load_generators():
+    """(Re)import the generator modules so edits are picked up without restarting."""
+    module = None
+    for name in GENERATOR_MODULES:
+        module = importlib.reload(sys.modules[name]) if name in sys.modules else importlib.import_module(name)
+    return module.GENERATORS
+
+def generate():
+    """Pick a generator from make_sample_patterns.py and load its frames directly."""
+    try:
+        generators = load_generators()
+    except Exception:
+        messagebox.showerror("Generate", traceback.format_exc(), parent=tk_root)
+        return
+    names = list(generators)
+    dialog = tk.Toplevel(tk_root)
+    dialog.title("Generate pattern")
+    dialog.attributes("-topmost", True)
+    listbox = tk.Listbox(dialog, width=36, height=max(6, min(20, len(names))), exportselection=False)
+    listbox.grid(row=0, column=0, rowspan=3, padx=10, pady=10)
+    for name in names:
+        listbox.insert("end", name)
+    listbox.selection_set(0)
+    doc = tk.Label(dialog, wraplength=260, justify="left", anchor="nw", width=36, height=6)
+    doc.grid(row=0, column=1, padx=10, pady=10, sticky="n")
+
+    def show_doc(_event=None):
+        choice = listbox.curselection()
+        doc.config(text=(generators[names[choice[0]]].__doc__ or "").strip() if choice else "")
+
+    def run():
+        choice = listbox.curselection()
+        if not choice:
+            return
+        try:
+            new_frames = generators[names[choice[0]]]()
+        except Exception:
+            messagebox.showerror("Generator failed", traceback.format_exc(), parent=dialog)
+            return
+        dialog.destroy()
+        set_frames(list(new_frames))
+
+    listbox.bind("<<ListboxSelect>>", show_doc)
+    listbox.bind("<Double-Button-1>", lambda e: run())
+    show_doc()
+    tk.Button(dialog, text="Generate", width=14, command=run).grid(row=1, column=1, padx=10, pady=3, sticky="s")
+    tk.Button(dialog, text="Cancel", width=14, command=dialog.destroy).grid(row=2, column=1, padx=10, pady=(3, 10), sticky="n")
+    dialog.protocol("WM_DELETE_WINDOW", dialog.destroy)
+    tk_root.wait_window(dialog)
+
 # -------------------------------------------------------------- playlist ----
 def choose_playlist():
     """Build an ordered list of .bin files. Returns the list of paths, or None if cancelled."""
@@ -431,6 +486,7 @@ Button(bx,       by,       90, 50, "New", newFile)
 Button(bx + 100, by,       90, 50, "Open File", openFile)
 Button(bx + 200, by,       90, 50, "Write File", writeFile)
 Button(bx + 300, by,       90, 50, "Quit", quit_pressed)
+Button(bx + 400, by,       110, 50, "Generate...", generate)
 Button(bx + 30,  by + 70,  46, 46, "<", previousFrame)
 Button(bx + 240, by + 70,  46, 46, ">", nextFrame)
 Button(bx,       by + 140, 100, 50, "copy Frame", copyFrame)
