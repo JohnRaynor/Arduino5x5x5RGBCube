@@ -147,6 +147,11 @@ Regions are sets of chain indices, so they combine with `|`, `&` and `-`:
 | `face("top")` etc., `EDGES`, `CORNERS` | the six faces, the 12 edges, the 8 corners |
 | `select(lambda x, y, z: x == y)` | anything else |
 
+`make_sample_patterns.py` has a worked example for each: `column_rain`,
+`top_face_lines`, `growing_cube`, `expanding_squares`, `breathing_ball`,
+`wireframe` (edges, corners, faces), `diagonal_wave` (`select`), `three_planes`
+(set algebra) and `morph_between`.
+
 Axes: x left–right, y front–back, z bottom–top, each 0–4. Colours are `(r, g, b)`
 tuples — `RED`, `BLUE`, … are predefined, `hsv(h)` gives a hue, `dim(colour, 0.3)`
 scales one. `Scene.scale(region, 0.5)` halves the brightness of what is already

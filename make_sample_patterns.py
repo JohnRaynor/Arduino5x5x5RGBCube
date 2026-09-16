@@ -10,12 +10,14 @@ Two ways to build frames, both shown below:
     rising_plane, chain_test);
   - use patterngen's named regions and a Scene (fade_all, shells, plane_sweep).
 """
+import random
 from pathlib import Path
 
 from cube_layout import SIZE, led_index
 from patterns import new_frame, write_pattern
-from patterngen import (ALL, CENTRE, MIDDLE, OUTER, BLUE, GREEN, RED, WHITE,
-                        Scene, hsv, plane)
+from patterngen import (ALL, CENTRE, CORNERS, EDGES, FACES, MIDDLE, OUTER,
+                        BLUE, CYAN, GREEN, MAGENTA, ORANGE, RED, WHITE, YELLOW,
+                        Scene, ball, column, cube, dim, hsv, line, plane, select, square)
 
 patterns_dir = Path(__file__).with_name("Patterns")
 
@@ -90,6 +92,141 @@ def plane_sweep(time_ms=50):
     return scene.frames
 
 
+# ---- one example per region type ----
+
+def column_rain(drops=20, time_ms=40, seed=1):
+    """column(x, y): random columns light up in random hues and fade away."""
+    rng = random.Random(seed)
+    scene = Scene(time_ms)
+    for _ in range(drops):
+        scene.scale(ALL, 0.6)                                   # older drops dim
+        scene.paint(column(rng.randrange(SIZE), rng.randrange(SIZE)), hsv(rng.random()))
+        scene.hold(120)
+    scene.fade_out(ALL, steps=15)
+    return scene.frames
+
+
+def top_face_lines(time_ms=80):
+    """line(axis, ...): a row scans across the top face, then a column of rows scans the other way."""
+    scene = Scene(time_ms)
+    top = SIZE - 1
+    for y in range(SIZE):                                       # lines along x, stepping back in y
+        scene.clear()
+        scene.paint(line("x", y=y, z=top), YELLOW)
+        scene.hold()
+    for x in range(SIZE):                                       # lines along y, stepping across in x
+        scene.clear()
+        scene.paint(line("y", x=x, z=top), CYAN)
+        scene.hold()
+    for z in range(SIZE):                                       # vertical line down the front-left edge
+        scene.clear()
+        scene.paint(line("z", x=0, y=0), dim(WHITE, 0.4))
+        scene.paint(select(lambda px, py, pz: px == 0 and py == 0 and pz == top - z), WHITE)
+        scene.hold()
+    scene.clear()
+    return scene.frames
+
+
+def growing_cube(time_ms=150):
+    """cube(n): a solid cube grows from the centre to fill everything, then shrinks."""
+    scene = Scene(time_ms)
+    for n in (0, 1, 2, 1, 0):
+        scene.clear()
+        scene.paint(cube(n), hsv(n / 3))
+        scene.hold()
+    scene.fade_out(ALL, steps=10)
+    return scene.frames
+
+
+def expanding_squares(time_ms=90):
+    """square(z, n): rings spread outwards on each layer, each layer one step behind the one below."""
+    scene = Scene(time_ms)
+    for step in range(SIZE + 3 + 2):                             # enough steps for the top layer to finish
+        scene.scale(ALL, 0.4)
+        for z in range(SIZE):
+            n = step - z                                         # this layer's ring radius
+            if 0 <= n <= 2:
+                scene.paint(square(z, n), hsv(z / SIZE))
+        scene.hold()
+    scene.fade_out(ALL, steps=10)
+    return scene.frames
+
+
+def breathing_ball(time_ms=70):
+    """ball(r): a sphere swells and shrinks; inner and outer parts in different colours."""
+    scene = Scene(time_ms)
+    radii = [0.5, 1.0, 1.5, 1.8, 2.3, 2.5, 3.0, 3.5]
+    for r in radii + radii[-2::-1]:
+        scene.clear()
+        scene.paint(ball(r), dim(MAGENTA, 0.5))                  # the whole ball, dim
+        scene.paint(ball(r - 1.0), WHITE)                        # the core, bright
+        scene.hold()
+    scene.fade_out(ALL, steps=8)
+    return scene.frames
+
+
+def wireframe(time_ms=60):
+    """EDGES, CORNERS and face(): the cube's outline, pulsing corners, then each face in turn."""
+    scene = Scene(time_ms)
+    scene.fade_in(EDGES, dim(BLUE, 0.5), steps=15)
+    for _ in range(3):                                           # corners pulse three times
+        scene.fade(CORNERS, WHITE, steps=6)
+        scene.fade(CORNERS, dim(BLUE, 0.5), steps=6)
+    for name, colour in zip(("front", "right", "back", "left", "top", "bottom"),
+                            (RED, ORANGE, YELLOW, GREEN, CYAN, MAGENTA)):
+        scene.fade(FACES[name], colour, steps=5)
+        scene.hold(200)
+        scene.fade(FACES[name] - EDGES, (0, 0, 0), steps=5)      # keep the outline lit
+    scene.fade_out(ALL, steps=15)
+    return scene.frames
+
+
+def diagonal_wave(time_ms=70):
+    """select(): diagonal planes (x + z = k) sweep through the cube, with a trail."""
+    scene = Scene(time_ms)
+    for k in range(2 * SIZE - 1):
+        scene.scale(ALL, 0.5)
+        scene.paint(select(lambda x, y, z, k=k: x + z == k), hsv(k / (2 * SIZE)))
+        scene.hold()
+    for k in range(3 * SIZE - 2):                                # then the true 3-D diagonal x + y + z = k
+        scene.scale(ALL, 0.5)
+        scene.paint(select(lambda x, y, z, k=k: x + y + z == k), WHITE)
+        scene.hold()
+    scene.fade_out(ALL, steps=10)
+    return scene.frames
+
+
+def three_planes(time_ms=100):
+    """Set algebra: the three centre planes as a 3-D cross; their intersections picked out."""
+    mid = SIZE // 2
+    px, py, pz = plane("x", mid), plane("y", mid), plane("z", mid)
+    scene = Scene(time_ms)
+    scene.fade_in(px | py | pz, dim(GREEN, 0.3), steps=12)       # union: the whole cross
+    scene.hold(400)
+    scene.fade((px & py) | (py & pz) | (pz & px), YELLOW, steps=10)   # pairwise intersections: three lines
+    scene.hold(400)
+    scene.fade(px & py & pz, WHITE, steps=8)                     # all three: the centre LED
+    scene.hold(600)
+    scene.fade(OUTER - (px | py | pz), dim(BLUE, 0.2), steps=12)  # difference: the surface, cross cut out
+    scene.hold(800)
+    scene.fade_out(ALL, steps=15)
+    return scene.frames
+
+
+def morph_between(time_ms=60):
+    """Scene.morph(): cross-fade between complete frames from other generators."""
+    scene = Scene(time_ms)
+    scene.load(rainbow_layers()[0])                              # start from another generator's frame
+    scene.hold(500)
+    target = Scene().paint(OUTER, RED).paint(MIDDLE, BLUE).paint(CENTRE, WHITE).current
+    scene.morph(target, steps=25)
+    scene.hold(500)
+    scene.morph(rising_plane()[2], steps=25)
+    scene.hold(500)
+    scene.fade_out(ALL, steps=15)
+    return scene.frames
+
+
 GENERATORS = {
     "rainbow_layers": rainbow_layers,
     "rising_plane": rising_plane,
@@ -97,6 +234,15 @@ GENERATORS = {
     "fade_all": fade_all,
     "shells": shells,
     "plane_sweep": plane_sweep,
+    "column_rain": column_rain,
+    "top_face_lines": top_face_lines,
+    "growing_cube": growing_cube,
+    "expanding_squares": expanding_squares,
+    "breathing_ball": breathing_ball,
+    "wireframe": wireframe,
+    "diagonal_wave": diagonal_wave,
+    "three_planes": three_planes,
+    "morph_between": morph_between,
 }
 
 if __name__ == "__main__":
