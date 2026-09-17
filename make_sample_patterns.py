@@ -21,6 +21,53 @@ from patterngen import (ALL, CENTRE, CORNERS, EDGES, FACES, MIDDLE, OUTER,
 
 patterns_dir = Path(__file__).with_name("Patterns")
 
+def random_rain(time_ms=50):
+    """A simple test pattern for the cube's first run."""
+    scene = Scene(time_ms)
+    for splashes in range(20):
+        x = random.randint(0, SIZE - 1)
+        y = random.randint(0, SIZE - 1)
+        scene.clear()
+        scene.hold(100)
+        for z in range(SIZE-1,-0,-1):
+            scene.paint(select(lambda px, py, pz: px == x and py == y and pz == z), (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)))
+            scene.hold(random.randint(30, 500) )
+            scene.paint(select(lambda px, py, pz: px == x and py == y and pz == z), (0,0,0))
+
+            # frame = new_frame(time_ms)
+            # frame["colours"][led_index(x, y, z)] = [150, 150, 150]
+
+        #    yield frame
+        scene.fade_in(plane("z", 0), (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)), steps=7)
+        scene.fade(plane("z", 0), (0, 0, 0), steps=20,time_ms=10)
+        
+
+    #scene.paint(plane("z", 0), (255,255,255 ))
+
+
+    # scene = Scene(time_ms)
+    # scene.paint(OUTER, RED)
+    # scene.hold(500)                          # one frame shown for 500 ms
+    # scene.fade_in(MIDDLE, BLUE, steps=20)    # 20 frames, MIDDLE black -> blue
+    # scene.fade_out(ALL, steps=30)            # 30 frames, everything -> black
+
+    return scene.frames
+
+
+def diagonal_wave(time_ms=70):
+    """select(): diagonal planes (x + z = k) sweep through the cube, with a trail."""
+    scene = Scene(time_ms)
+    for k in range(2 * SIZE - 1):
+        scene.scale(ALL, 0.5)
+        scene.paint(select(lambda x, y, z, k=k: x + z == k), hsv(k / (2 * SIZE)))
+        scene.hold()
+    for k in range(3 * SIZE - 2):                                # then the true 3-D diagonal x + y + z = k
+        scene.scale(ALL, 0.5)
+        scene.paint(select(lambda x, y, z, k=k: x + y + z == k), WHITE)
+        scene.hold()
+    scene.fade_out(ALL, steps=10)
+    return scene.frames
+
 
 def rainbow_layers(steps=30, time_ms=80):
     """Each layer a different hue, the whole cube cycling through the spectrum."""
@@ -181,19 +228,6 @@ def wireframe(time_ms=60):
     return scene.frames
 
 
-def diagonal_wave(time_ms=70):
-    """select(): diagonal planes (x + z = k) sweep through the cube, with a trail."""
-    scene = Scene(time_ms)
-    for k in range(2 * SIZE - 1):
-        scene.scale(ALL, 0.5)
-        scene.paint(select(lambda x, y, z, k=k: x + z == k), hsv(k / (2 * SIZE)))
-        scene.hold()
-    for k in range(3 * SIZE - 2):                                # then the true 3-D diagonal x + y + z = k
-        scene.scale(ALL, 0.5)
-        scene.paint(select(lambda x, y, z, k=k: x + y + z == k), WHITE)
-        scene.hold()
-    scene.fade_out(ALL, steps=10)
-    return scene.frames
 
 
 def three_planes(time_ms=100):
@@ -228,6 +262,7 @@ def morph_between(time_ms=60):
 
 
 GENERATORS = {
+    "random_rain": random_rain,
     "rainbow_layers": rainbow_layers,
     "rising_plane": rising_plane,
     "chain_test": chain_test,
