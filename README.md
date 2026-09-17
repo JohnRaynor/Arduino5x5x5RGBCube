@@ -73,8 +73,8 @@ angle, front row lowest. Unlit LEDs are drawn dark grey.
 - The **palette** (bottom left) sets the hue; the row under it sets the
   brightness (100 / 50 / 25 / 10 %). The preview box shows the resulting paint
   colour. **Custom…** opens the system colour picker.
-- **Fill layer / Clear layer** act on the layer of the last dot you clicked
-  (shown as *Layer n*). **Fill all / Clear all** act on the whole frame.
+- **Fill layer n / Clear layer n** act on the layer of the last dot you clicked
+  (the button labels show which). **Fill all / Clear all** act on the whole frame.
 
 Everything else is the same as the 4×4×4 editor:
 
@@ -83,8 +83,8 @@ Everything else is the same as the 4×4×4 editor:
 | **New** | Start again with a single blank frame (asks first). |
 | **Open File** / **Write File** | Load / save a `.bin` pattern file. |
 | **<** / **>** | Step to the previous / next frame. |
-| **copy Frame** | Insert a copy of the current frame in front of it. |
-| **Play File** / **Stop** | Loop through all frames on screen using each frame's display time. |
+| **Copy frame** | Insert a copy of the current frame in front of it. |
+| **Play** / **Stop** | One button: loop through all frames on screen using each frame's display time; click again to stop. |
 | **▲** / **▼** | Slow down / speed up the current frame by about 20 % (5 – 65535 ms). |
 | **Apply to all frames** | Copy the current frame's display time to every frame. |
 | **Start** / **End** / **Clear** | Mark a block of frames; with no block set, block operations act on the current frame. |

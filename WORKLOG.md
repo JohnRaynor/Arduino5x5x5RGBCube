@@ -30,3 +30,7 @@
 - Editor: **Generate…** button lists the generators and loads frames directly, reloading `patterngen` and `make_sample_patterns` first so edits are picked up without restarting; generator exceptions are shown in a dialog. Tested headlessly (load, reload-on-edit, failure leaves frames intact) and the button checked in the real window.
 - PSU chosen: a 5 V 10 A desktop brick (COOLM, Amazon B0G2RXZG5K); cap at ~5 A in the sketch and terminate the lead in a screw block rather than a barrel socket.
 - Added one example generator per region type (nine in all) to `make_sample_patterns.py`; LED counts per frame spot-checked.
+
+## 2026-09-17
+
+- Editor tidy-up: buttons pale blue and 36 px high on a 50 px row pitch, laid out by a `button_row()` helper; read-outs (frame, time, block, paint colour) are dark boxes so they no longer look like buttons; the `>` button no longer hides under the frame counter (fixed-width read-outs). Play/Stop is one toggling button. The *Layer n* read-out is gone — the Fill layer / Clear layer buttons now carry the layer number themselves.

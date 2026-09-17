@@ -81,9 +81,9 @@ def paint_colour():
 class Button:
     def __init__(self, x, y, width, height, buttonText="Button", onclickFunction=None):
         self.name = buttonText
-        self.text = buttonText
+        self.text = None
         self.onclickFunction = onclickFunction
-        self.fillColors = {"normal": "#ffffff", "hover": "#666666", "pressed": "#33aa33"}
+        self.fillColors = {"normal": "#cfe2f5", "hover": "#a6c8ea", "pressed": "#7fc47f"}
         self.buttonSurface = pygame.Surface((width, height))
         self.buttonRect = pygame.Rect(x, y, width, height)
         self.alreadyPressed = False
@@ -91,8 +91,9 @@ class Button:
         self.set_text(buttonText)
 
     def set_text(self, new_text):
-        self.text = new_text
-        self.buttonSurf = font.render(self.text, True, (20, 20, 20))
+        if new_text != self.text:
+            self.text = new_text
+            self.buttonSurf = font.render(self.text, True, (20, 20, 20))
 
     def process(self):
         mousePos = pygame.mouse.get_pos()
@@ -114,22 +115,32 @@ class Button:
 
 
 class TextBox:
-    def __init__(self, text, position, text_color=(0, 0, 0), bg_color=(255, 255, 255), padding=15, use_font=None):
+    """A read-out (not clickable). With width/height the box is fixed-size and the text centred."""
+    def __init__(self, text, position, text_color=(230, 230, 230), bg_color=(45, 45, 45), padding=8,
+                 use_font=None, width=None, height=None):
         self.text_color = text_color
         self.bg_color = bg_color
         self.padding = padding
         self.position = position
         self.font = use_font or font
+        self.fixed = (width, height)
+        self.text = None
         self.update_text(text)
 
     def update_text(self, new_text):
+        if new_text == self.text:
+            return
+        self.text = new_text
         self.text_surface = self.font.render(new_text, True, self.text_color)
         width, height = self.text_surface.get_size()
-        self.rect = pygame.Rect(self.position[0], self.position[1], width + 2 * self.padding, height + 2 * self.padding)
+        width = self.fixed[0] or width + 2 * self.padding
+        height = self.fixed[1] or height + 2 * self.padding
+        self.rect = pygame.Rect(self.position[0], self.position[1], width, height)
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.bg_color, self.rect)
-        screen.blit(self.text_surface, (self.rect.x + self.padding, self.rect.y + self.padding))
+        pygame.draw.rect(screen, (90, 90, 90), self.rect, 1)
+        screen.blit(self.text_surface, self.text_surface.get_rect(center=self.rect.center))
 
 
 # ------------------------------------------------------------- frame ops ----
@@ -172,6 +183,9 @@ def playFile():
 def stop_play():
     global run_frames
     run_frames = False
+
+def toggle_play():
+    stop_play() if run_frames else playFile()
 
 def newFile():
     if messagebox.askyesno("New pattern", "Discard the current frames and start a new pattern?", parent=tk_root):
@@ -482,50 +496,55 @@ def saveToArduinoSD():
 
 # --------------------------------------------------------------- buttons ----
 bx, by = button_pos
-Button(bx,       by,       90, 50, "New", newFile)
-Button(bx + 100, by,       90, 50, "Open File", openFile)
-Button(bx + 200, by,       90, 50, "Write File", writeFile)
-Button(bx + 300, by,       90, 50, "Quit", quit_pressed)
-Button(bx + 400, by,       110, 50, "Generate...", generate)
-Button(bx + 30,  by + 70,  46, 46, "<", previousFrame)
-Button(bx + 240, by + 70,  46, 46, ">", nextFrame)
-Button(bx,       by + 140, 100, 50, "copy Frame", copyFrame)
-Button(bx + 110, by + 140, 100, 50, "Stop", stop_play)
-Button(bx + 220, by + 140, 100, 50, "Play File", playFile)
-Button(bx,       by + 210, 150, 50, "Apply to all frames", apply_time_to_all_frames)
-Button(bx + 360, by + 210, 22, 20, " ▲", slowdown)
-Button(bx + 360, by + 235, 22, 20, " ▼", speedup)
-Button(bx,       by + 280, 60, 50, "Start", set_block_start)
-Button(bx + 250, by + 280, 60, 50, "End", set_block_end)
-Button(bx + 320, by + 280, 60, 50, "Clear", clear_block)
-Button(bx,       by + 350, 90, 50, "Copy", copy_block)
-Button(bx + 100, by + 350, 90, 50, "Cut", cut_block)
-Button(bx + 200, by + 350, 90, 50, "Paste", paste_block)
-Button(bx + 300, by + 350, 90, 50, "Reverse", reverse_block)
-Button(bx,       by + 420, 100, 50, "Fill layer", fill_layer)
-Button(bx + 110, by + 420, 100, 50, "Clear layer", clear_layer)
-Button(bx + 220, by + 420, 100, 50, "Fill all", fill_all)
-Button(bx + 330, by + 420, 100, 50, "Clear all", clear_all)
-Button(bx,       by + 490, 130, 50, "Preview Cube", previewCube)
-Button(bx + 140, by + 490, 130, 50, "Save to SD", saveToArduinoSD)
-Button(bx + 280, by + 490, 130, 50, "Playlist", playlist)
-Button(palette_pos[0] + 13 * (swatch + 6) + 20, palette_pos[1] - 8, 110, 50, "Custom...", custom_colour)
+bh, row, gap = 36, 50, 8    # button height, row pitch, gap between buttons
 
-frame_text = TextBox("", (bx + 115, by + 70))
-time_text = TextBox("", (bx + 165, by + 210))
-block_text = TextBox("", (bx + 70, by + 280), padding=12)
-layer_text = TextBox("", (bx + 300, by + 70), padding=12)
-paint_text = TextBox("", (palette_pos[0], palette_pos[1] + 2 * (swatch + 6) + 10), padding=8, use_font=small_font)
+def button_row(y, *items):
+    """Lay out (width, label, callback) buttons and (width, name) read-outs left to right.
+    Returns the read-outs by name."""
+    x, boxes = bx, {}
+    for item in items:
+        width = item[0]
+        if len(item) == 3:
+            Button(x, y, width, bh, item[1], item[2])
+        else:
+            boxes[item[1]] = TextBox("", (x, y), width=width, height=bh)
+        x += width + gap
+    return boxes
+
+readouts = {}
+button_row(by, (80, "New", newFile), (90, "Open File", openFile), (90, "Write File", writeFile),
+           (100, "Generate...", generate), (70, "Quit", quit_pressed))
+readouts.update(button_row(by + row, (bh, "<", previousFrame), (150, "frame"), (bh, ">", nextFrame),
+                           (110, "Copy frame", copyFrame), (80, "Play", toggle_play)))
+readouts.update(button_row(by + 2 * row, (190, "time")))
+Button(bx + 190 + gap, by + 2 * row, 22, bh // 2 - 1, "▲", slowdown)
+Button(bx + 190 + gap, by + 2 * row + bh // 2, 22, bh // 2 - 1, "▼", speedup)
+Button(bx + 190 + 2 * gap + 22, by + 2 * row, 160, bh, "Apply to all frames", apply_time_to_all_frames)
+readouts.update(button_row(by + 3 * row, (60, "Start", set_block_start), (170, "block"),
+                           (60, "End", set_block_end), (60, "Clear", clear_block)))
+button_row(by + 4 * row, (90, "Copy", copy_block), (90, "Cut", cut_block), (90, "Paste", paste_block),
+           (90, "Reverse", reverse_block))
+button_row(by + 5 * row, (110, "Fill layer", fill_layer), (110, "Clear layer", clear_layer),
+           (90, "Fill all", fill_all), (90, "Clear all", clear_all))
+button_row(by + 6 * row, (120, "Preview Cube", previewCube), (110, "Save to SD", saveToArduinoSD),
+           (90, "Playlist", playlist))
+Button(palette_pos[0] + 13 * (swatch + 6) + 20, palette_pos[1] - 1, 100, bh, "Custom...", custom_colour)
+
+frame_text, time_text, block_text = readouts["frame"], readouts["time"], readouts["block"]
+paint_text = TextBox("", (palette_pos[0], palette_pos[1] + 2 * (swatch + 6) + 10), use_font=small_font)
 update_block_text()
 
 def show_text_boxes():
     frame_text.update_text(f"Frame {frameNo} of {len(frames) - 1}")
-    time_text.update_text(f"Display Time {frames[frameNo]['time']}")
-    layer_text.update_text(f"Layer {current_layer}")
+    time_text.update_text(f"Display time {frames[frameNo]['time']} ms")
     r, g, b = paint_colour()
     paint_text.update_text(f"Paint colour  R {r}  G {g}  B {b}      left-click paints, right-click switches off")
-    for box in (frame_text, time_text, block_text, layer_text, paint_text):
+    for box in (frame_text, time_text, block_text, paint_text):
         box.draw(screen)
+    # buttons whose labels follow the state
+    button_registry["Play"].set_text("Stop" if run_frames else "Play")
+    button_registry["Fill layer"].set_text(f"Fill layer {current_layer}")
+    button_registry["Clear layer"].set_text(f"Clear layer {current_layer}")
 
 # ------------------------------------------------------------ cube layout ----
 led_rect = [None] * len(XYZ)    # by chain index
