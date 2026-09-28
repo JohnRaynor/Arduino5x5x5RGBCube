@@ -22,7 +22,7 @@ from patterngen import (ALL, CENTRE, CORNERS, EDGES, FACES, MIDDLE, OUTER,
 patterns_dir = Path(__file__).with_name("Patterns")
 
 def random_rain(time_ms=50):
-    """A simple test pattern for the cube's first run."""
+    """simulate rain and splash effects."""
     scene = Scene(time_ms)
     for splashes in range(20):
         x = random.randint(0, SIZE - 1)
@@ -37,7 +37,23 @@ def random_rain(time_ms=50):
             scene.paint(column(x, y) & plane("z", z), (0,0,0))
         scene.fade_in(plane("z", 0), (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)), steps=7)
         scene.fade(plane("z", 0), (0, 0, 0), steps=20,time_ms=10)
-   return scene.frames
+    return scene.frames
+
+def breadboard_test(time_ms=200):
+    """A simple test pattern for a breadboard test."""
+    """Lights LEDs one at a time in chain order:"""
+    frames = []
+    No_0f_LEDs = 3
+    for colours in (WHITE, RED, GREEN, BLUE):
+        for index in range(No_0f_LEDs):
+            frame = new_frame(time_ms)
+            frame["colours"][index] = list(colours)
+            frames.append(frame)    
+    # for index in range(No_0f_LEDs):
+    #     frame = new_frame(time_ms)
+    #     frame["colours"][index] = [255, 255, 255]
+    #     frames.append(frame)
+    return frames
 
 
 def diagonal_wave(time_ms=70):
@@ -248,6 +264,7 @@ def morph_between(time_ms=60):
 
 
 GENERATORS = {
+    "breadboard_test": breadboard_test,
     "random_rain": random_rain,
     "rainbow_layers": rainbow_layers,
     "rising_plane": rising_plane,
@@ -263,7 +280,7 @@ GENERATORS = {
     "wireframe": wireframe,
     "diagonal_wave": diagonal_wave,
     "three_planes": three_planes,
-    "morph_between": morph_between,
+    "morph_between": morph_between
 }
 
 if __name__ == "__main__":
