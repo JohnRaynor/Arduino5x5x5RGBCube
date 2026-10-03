@@ -34,3 +34,11 @@
 ## 2026-09-17
 
 - Editor tidy-up: buttons pale blue and 36 px high on a 50 px row pitch, laid out by a `button_row()` helper; read-outs (frame, time, block, paint colour) are dark boxes so they no longer look like buttons; the `>` button no longer hides under the frame counter (fixed-width read-outs). Play/Stop is one toggling button. The *Layer n* read-out is gone — the Fill layer / Clear layer buttons now carry the layer number themselves.
+
+## 2026-10-03
+
+- Breadboard: Nano + SD working. First LED destroyed by reverse polarity — the LEDs bought (Amazon B0FVM6PGT7, WS2812/SK6812 family) are **DIN · GND · VDD · DOUT**, i.e. the middle two pins swapped from the APA106 order revision 1 of the wiring plan assumed. Confirmed correct on the bench; 4 LEDs now running with `WS2812B` / `GRB`.
+- Leg lengths measured: GND 16.5 mm, VDD 15 mm, DIN/DOUT 14 mm. Too short to span the 20.32 mm pitch, so the structure changes to continuous 0.9 mm tinned-copper pillars with the VDD legs soldered on, plus per-row GND rails.
+- Wiring plan rewritten (revision 2): new pinout, pillar structure, 20.32 mm pitch, stripboard base with a detailed power-feed plan, layers no longer rotated (incompatible with vertical pillars — costs one routed data jumper per layer boundary, gains five identical layers).
+- Decisions: VDD stays on the verticals (keeps the data return path local to each row); `MAX_MILLIAMPS` to be set to 3000 so the DC socket stays inside its rating; 100 x 160 mm Eurocard stripboard rather than 100 mm square.
+- Sourced: Rapid 05-0310 (0.9 mm tinned copper wire), 47-2566 (1N5819), 20-0989 (5.5 x 2.5 mm chassis socket).

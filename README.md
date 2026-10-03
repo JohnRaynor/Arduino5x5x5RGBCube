@@ -31,7 +31,7 @@ the cube's vertical columns exactly as the anode columns do in the 4×4×4. GND
 bends to the back into a rail per layer; DIN and DOUT bend sideways so data
 snakes through each layer in a serpentine. Five identical layers are built on
 a jig and stacked, alternate layers rotated 180° so the layer-to-layer data
-jumper is only 25 mm. The cube is powered directly from a 5 V 5 A supply with
+pitch is 20.32 mm — eight holes of 0.1 inch stripboard. The cube is powered directly from a 5 V 5 A supply with
 a software current cap; the Nano runs from USB or the same supply via a
 Schottky diode.
 
