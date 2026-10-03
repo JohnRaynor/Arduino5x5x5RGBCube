@@ -43,12 +43,13 @@ def breadboard_test(time_ms=200):
     """A simple test pattern for a breadboard test."""
     """Lights LEDs one at a time in chain order:"""
     frames = []
-    No_0f_LEDs = 3
-    for colours in (WHITE, RED, GREEN, BLUE):
-        for index in range(No_0f_LEDs):
-            frame = new_frame(time_ms)
-            frame["colours"][index] = list(colours)
-            frames.append(frame)    
+    No_0f_LEDs = 4
+    for repeats in range(3):    
+        for colours in (WHITE, RED, GREEN, BLUE):
+            for index in range(No_0f_LEDs):
+                frame = new_frame(time_ms)
+                frame["colours"][index] = list(colours)
+                frames.append(frame)    
     # for index in range(No_0f_LEDs):
     #     frame = new_frame(time_ms)
     #     frame["colours"][index] = [255, 255, 255]

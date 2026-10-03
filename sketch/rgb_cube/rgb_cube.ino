@@ -30,8 +30,9 @@
 #include <SPI.h>
 #include <SdFat.h>
 
-#define LED_TYPE        APA106     // PL9823 for those LEDs
-#define COLOR_ORDER     RGB        // swap to GRB etc. if red and green are exchanged
+//#define LED_TYPE        APA106     // PL9823 for those LEDs
+#define LED_TYPE        WS2812B     // PL9823 for those LEDs
+#define COLOR_ORDER     GRB        // swap to GRB etc. if red and green are exchanged
 #define DATA_PIN        6
 #define SD_CS_PIN       3
 #define NUM_LEDS        125
@@ -240,6 +241,7 @@ void setup() {
   Serial.begin(115200);
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS);
   FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS);
+  FastLED.setBrightness(64);   // 25% — plenty for bench work
   FastLED.clear(true);
 
   pinMode(SD_CS_PIN, OUTPUT);
