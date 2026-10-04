@@ -30,14 +30,13 @@
 #include <SPI.h>
 #include <SdFat.h>
 
-//#define LED_TYPE        APA106     // PL9823 for those LEDs
-#define LED_TYPE        WS2812B     // PL9823 for those LEDs
-#define COLOR_ORDER     GRB        // swap to GRB etc. if red and green are exchanged
+#define LED_TYPE        WS2812B    // confirmed on the bench; APA106/PL9823 parts need their own type
+#define COLOR_ORDER     GRB        // WS2812 family is GRB; permute if red and green come out swapped
 #define DATA_PIN        6
 #define SD_CS_PIN       3
 #define NUM_LEDS        125
 #define FRAME_BYTES     (NUM_LEDS * 3 + 2)
-#define MAX_MILLIAMPS   4000       // software current cap; supply is 5 V 5 A
+#define MAX_MILLIAMPS   3000       // software current cap; keeps the 5.5x2.5 mm DC socket inside its rating
 #define PREVIEW_HOLD_MS 60000UL    // resume random playback if the PC goes quiet
 #define SERIAL_QUIET_MS 50         // no refreshes this long after any serial byte
 #define SD_BLOCK        64         // bytes per NEXT acknowledgement during an SD write

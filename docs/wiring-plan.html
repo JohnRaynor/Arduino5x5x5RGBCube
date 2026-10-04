@@ -447,7 +447,7 @@ FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS);</code></pre>
     <tr><td class="n">5</td><td>1N5819 Schottky diode, 1 A 40 V, DO-41</td><td>Rapid <b>47-2566</b>, 8 p each in fives. Only one is needed; they are sold in multiples.</td></tr>
     <tr><td class="n">5</td><td>DC chassis socket, 5.5 × 2.5 mm</td><td>Rapid <b>20-0989</b> (RVFM DC-022 2.5), 88 p each in fives. <b>2.5 mm, not 2.1</b> — the COOLM brick has a 2.5 mm plug and it will be loose in a 2.1 mm socket.</td></tr>
     <tr><td class="n">1</td><td>5 V 10 A PSU</td><td>Already bought. Software cap keeps the draw to 3 A.</td></tr>
-    <tr><td class="n">1</td><td>1000 µF 10 V electrolytic</td><td>At the supply entry on the base board.</td></tr>
+    <tr><td class="n">1</td><td>470–1000 µF electrolytic, 10 V or 16 V</td><td>At the supply entry on the base board. The value is not critical; more is better for transients, less is kinder to the DC socket on plug-in. Low-ESR or a 105 °C part if there is a choice.</td></tr>
     <tr><td class="n">10</td><td>100 nF ceramic</td><td>One or two per layer, pillar to nearest GND rail.</td></tr>
     <tr><td class="n">1</td><td>330 Ω resistor</td><td>In series with D6. The sacrificial part — keep it.</td></tr>
     <tr><td class="n">1</td><td>100 Ω resistor</td><td>Not in the finished cube. Put it in series with the 5 V feed for the <i>first</i> power-up of anything newly soldered.</td></tr>
