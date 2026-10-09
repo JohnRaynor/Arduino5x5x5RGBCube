@@ -42,3 +42,4 @@
 - Wiring plan rewritten (revision 2): new pinout, pillar structure, 20.32 mm pitch, stripboard base with a detailed power-feed plan, layers no longer rotated (incompatible with vertical pillars — costs one routed data jumper per layer boundary, gains five identical layers).
 - Decisions: VDD stays on the verticals (keeps the data return path local to each row); `MAX_MILLIAMPS` to be set to 3000 so the DC socket stays inside its rating; 100 x 160 mm Eurocard stripboard rather than 100 mm square.
 - Sourced: Rapid 05-0310 (0.9 mm tinned copper wire), 47-2566 (1N5819), 20-0989 (5.5 x 2.5 mm chassis socket).
+- Decoupling reconsidered: none inside the cube volume (solid 0.9 mm copper buses are a far better supply than the PCB strips the "100 nF per LED" rule is written for, and a missed data bit costs one frame, not damage). Two or three 100 nF on the base board instead; retrofit at the top-layer corners only if bright transitions sparkle.

@@ -359,8 +359,16 @@
     <li><b>Capacitor to the GND ring:</b> one connection, near the same point.</li>
     <li><b>The Nano's GND:</b> to the GND ring <i>close to where the data wire leaves for LED (0,0)</i>. The data signal returns through that connection; a short one keeps the loop small.</li>
     <li><b>The Nano's 5 V:</b> through the 1N5819 from the ladder, so the board runs on either USB or the brick without the two supplies meeting.</li>
-    <li><b>Per-layer decoupling:</b> a 100 nF ceramic between any pillar and the nearest GND rail, one or two per layer at opposite corners. Cheap, and it stops the data line seeing the supply bounce when a bright frame lands.</li>
+    <li><b>Decoupling:</b> two or three 100 nF ceramics on the base board, one from each of the outer and middle VDD strips to the GND ring. See below for why none go inside the cube.</li>
   </ul>
+
+  <h3>Why no decoupling inside the cube</h3>
+
+  <p>The "100 nF next to every LED" rule comes from the WS2812 reference design, and commercial strips do carry one per LED — but a strip's supply is thin copper on flexible plastic. This cube's is solid 0.9 mm wire at a few milliohms, which is a far better supply than any strip, and the published through-hole cube builds fit no decoupling at all.</p>
+
+  <p>The cost of being wrong is small and reversible. If a layer's local rail did bounce hard enough during the 800 kHz data stream, an LED would misread a bit and show a wrong colour <i>for one frame</i>; the next refresh corrects it. Nothing overheats and nothing is damaged. And a ceramic bridging a pillar and the nearest GND rail can be fitted to a finished cube from the outside with a fine iron, so the decision can be revisited.</p>
+
+  <p>So: keep the cube volume clear, and if hard black-to-white transitions ever sparkle, retrofit at the far corners of the top layer first — electrically the worst spot, and where the tie bar and riser already meet, so a cap tucked in there barely shows.</p>
 
   <div class="note">
     <p><b>No top-end injection needed.</b> 0.9 mm copper is 2.2 mΩ per 100 mm. The worst-loaded conductor in the whole cube — a layer tie bar carrying 1.5 A over 81 mm — drops under 3 mV, and a pillar drops a fraction of a millivolt. The voltage drop people warn about in LED cubes is a problem of thin PCB traces and long thin leads, neither of which this design has. The two places that <i>do</i> matter are the stripboard strips, fixed by the reinforcing wire, and the DC connector.</p>
@@ -448,7 +456,7 @@ FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS);</code></pre>
     <tr><td class="n">5</td><td>DC chassis socket, 5.5 × 2.5 mm</td><td>Rapid <b>20-0989</b> (RVFM DC-022 2.5), 88 p each in fives. <b>2.5 mm, not 2.1</b> — the COOLM brick has a 2.5 mm plug and it will be loose in a 2.1 mm socket.</td></tr>
     <tr><td class="n">1</td><td>5 V 10 A PSU</td><td>Already bought. Software cap keeps the draw to 3 A.</td></tr>
     <tr><td class="n">1</td><td>470–1000 µF electrolytic, 10 V or 16 V</td><td>At the supply entry on the base board. The value is not critical; more is better for transients, less is kinder to the DC socket on plug-in. Low-ESR or a 105 °C part if there is a choice.</td></tr>
-    <tr><td class="n">10</td><td>100 nF ceramic</td><td>One or two per layer, pillar to nearest GND rail.</td></tr>
+    <tr><td class="n">5</td><td>100 nF ceramic</td><td>Two or three on the base board; the rest are spares in case any are ever retrofitted inside the cube.</td></tr>
     <tr><td class="n">1</td><td>330 Ω resistor</td><td>In series with D6. The sacrificial part — keep it.</td></tr>
     <tr><td class="n">1</td><td>100 Ω resistor</td><td>Not in the finished cube. Put it in series with the 5 V feed for the <i>first</i> power-up of anything newly soldered.</td></tr>
     <tr><td class="n">1</td><td>Jig: 120 × 120 mm board drilled 5 × 5 at 20.32 mm, 5 mm holes</td><td>Lay it out from a piece of the stripboard so the jig and the base agree. 20.00 mm would be 1.3 mm out by the fifth column.</td></tr>
@@ -467,7 +475,6 @@ FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS);</code></pre>
     <li><div><b>Stand the 25 pillars</b> in the base board and solder them to the strips. Check they are vertical and parallel in both axes before going further — everything stacks on them.</div></li>
     <li><div><b>Thread the layers on</b> from the top down, spacing them 20.32 mm with offcuts of stripboard as gauges. Solder each layer's VDD legs to the pillars, then its tie bars to the corner risers. Test after every layer.</div></li>
     <li><div><b>Route the four data jumpers</b> between layers, up the back-left corner alongside a GND riser.</div></li>
-    <li><div><b>Add the decoupling caps</b>, one or two per layer.</div></li>
     <li><div><b>First full power-up</b> with the 100 Ω still in the supply line, then remove it and raise <code>MAX_MILLIAMPS</code> to taste.</div></li>
   </ol>
 
