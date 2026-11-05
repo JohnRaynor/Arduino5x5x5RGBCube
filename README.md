@@ -81,7 +81,7 @@ Everything else is the same as the 4×4×4 editor:
 | Button | What it does |
 |---|---|
 | **New** | Start again with a single blank frame (asks first). |
-| **Open File** / **Write File** | Load / save a `.bin` pattern file. |
+| **Open File** / **Write File** | Load / save a `.bin` pattern file. Opening **inserts** the file after the current frame and leaves you on its last frame, so files chain together; use **New** first to start from nothing. |
 | **<** / **>** | Step to the previous / next frame. |
 | **Copy frame** | Insert a copy of the current frame in front of it. |
 | **Play** / **Stop** | One button: loop through all frames on screen using each frame's display time; click again to stop. |
@@ -91,8 +91,8 @@ Everything else is the same as the 4×4×4 editor:
 | **Copy** / **Cut** / **Paste** / **Reverse** | Copy the block; cut (delete) it; insert the copy after the current frame; reverse its play order. |
 | **Preview Cube** | Play the frames on the physical cube over serial. Needs the sketch. |
 | **Save to SD** | Save the pattern locally, then write it under the same 8.3 name to the cube's SD card. Needs the sketch. |
-| **Playlist** | Choose several `.bin` files, order them, and load them as one pattern. |
-| **Generate…** | Pick a generator from `make_sample_patterns.py` and load its frames directly, no file needed. The generator code is reloaded every time, so edit, save, click Generate. |
+| **Playlist** | Choose several `.bin` files, order them, and load them as one pattern. Unlike Open File, this still replaces what is loaded. |
+| **Generate…** | Pick a generator from `make_sample_patterns.py` and insert its frames directly, no file needed — same insert-and-chain behaviour as Open File. The generator code is reloaded every time, so edit, save, click Generate. |
 
 The serial port is asked for once and remembered in `.led_cube_settings.json`.
 
@@ -150,11 +150,28 @@ Regions are sets of chain indices, so they combine with `|`, `&` and `-`:
 `make_sample_patterns.py` has a worked example for each: `column_rain`,
 `top_face_lines`, `growing_cube`, `expanding_squares`, `breathing_ball`,
 `wireframe` (edges, corners, faces), `diagonal_wave` (`select`), `three_planes`
-(set algebra) and `morph_between`.
+(set algebra), `morph_between` and `handover` (`crossfade`).
 
 Axes: x left–right, y front–back, z bottom–top, each 0–4. Colours are `(r, g, b)`
 tuples — `RED`, `BLUE`, … are predefined, `hsv(h)` gives a hue, `dim(colour, 0.3)`
-scales one. `Scene.scale(region, 0.5)` halves the brightness of what is already
+scales one.
+
+Fades come in four kinds. `fade`, `fade_in` and `fade_out` move one region at a
+time; the other two move several at once, over the same frames:
+
+```python
+scene.crossfade(OUTER, CENTRE, BLUE, steps=20)      # OUTER fades out as CENTRE fades in
+scene.fade_many([(layer(0), RED), (layer(4), GREEN), (MIDDLE, BLACK)], steps=20)
+```
+
+`crossfade(out_of, into, colour, steps)` takes `out_of` down to black while
+`into` comes up to `colour` — pass `from_black=False` to move the incoming
+region from its current colour rather than starting it dark. `fade_many` is the
+general form: give it `(region, colour)` pairs and every LED named moves from
+whatever it is now to its own target together. Where regions overlap, the pair
+listed last wins.
+
+`Scene.scale(region, 0.5)` halves the brightness of what is already
 lit (good for trails), `Scene.morph(frame, steps)` cross-fades the whole cube
 to another frame, and `Scene.extend(frames)` appends frames built the low-level
 way:

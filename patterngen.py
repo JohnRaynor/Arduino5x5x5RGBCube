@@ -203,6 +203,37 @@ class Scene:
         """`region` down to black."""
         return self.fade(region, BLACK, steps, time_ms)
 
+    def fade_many(self, targets, steps, time_ms=None):
+        """Fade several regions to different colours at the same time.
+
+        `targets` is a sequence of (region, colour) pairs. Every LED named moves
+        from whatever colour it is now to its own target over the same `steps`
+        frames, so the moves happen together rather than one after another.
+        Where two regions overlap, the pair listed last wins.
+        """
+        plan = {}
+        for region, colour in targets:
+            target = tuple(colour)
+            for i in region:
+                plan[i] = (tuple(self.colours[i]), target)
+        for step in range(1, steps + 1):
+            t = step / steps
+            for i, (start, target) in plan.items():
+                self.colours[i] = list(mix(start, target, t))
+            self.hold(time_ms)
+        return self
+
+    def crossfade(self, out_of, into, colour, steps, time_ms=None, from_black=True):
+        """Fade `out_of` down to black while `into` comes up to `colour`, together.
+
+        By default the incoming region starts dark, so it really does fade in;
+        pass from_black=False to take it from its current colour instead. Where
+        the two regions overlap, `into` wins.
+        """
+        if from_black:
+            self.clear(into)
+        return self.fade_many([(out_of, BLACK), (into, colour)], steps, time_ms)
+
     def morph(self, target, steps, time_ms=None):
         """Cross-fade the whole cube to `target`, a frame or a list of 125 colours."""
         target = target["colours"] if isinstance(target, dict) else target
@@ -238,4 +269,13 @@ if __name__ == "__main__":
     scene = Scene(50).paint(OUTER, RED).hold().fade_out(ALL, 4)
     assert len(scene.frames) == 5 and scene.frames[-1]["colours"] == [[0, 0, 0]] * LED_COUNT
     assert scene.frames[2]["colours"][next(iter(OUTER))] == [128, 0, 0]
+    # crossfade: the two regions move together, one down and one up
+    cf = Scene(50).paint(OUTER, RED).crossfade(OUTER, CENTRE, BLUE, steps=4)
+    assert len(cf.frames) == 4
+    out_led, in_led = next(iter(OUTER)), next(iter(CENTRE))
+    assert [f["colours"][out_led] for f in cf.frames] == [[191, 0, 0], [128, 0, 0], [64, 0, 0], [0, 0, 0]]
+    assert [f["colours"][in_led] for f in cf.frames] == [[0, 0, 64], [0, 0, 128], [0, 0, 191], [0, 0, 255]]
+    # fade_many: a later pair wins where regions overlap
+    fm = Scene(50).fade_many([(ALL, RED), (CENTRE, GREEN)], steps=2)
+    assert fm.frames[-1]["colours"][in_led] == [0, 255, 0]
     print("patterngen OK")

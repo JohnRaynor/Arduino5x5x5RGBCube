@@ -39,11 +39,11 @@ def random_rain(time_ms=50):
         scene.fade(plane("z", 0), (0, 0, 0), steps=20,time_ms=10)
     return scene.frames
 
-def breadboard_test(time_ms=200):
+def breadboard_test(time_ms=300):
     """A simple test pattern for a breadboard test."""
     """Lights LEDs one at a time in chain order:"""
     frames = []
-    No_0f_LEDs = 5
+    No_0f_LEDs = 6
     for repeats in range(2):    
         for colours in (WHITE, RED, GREEN, BLUE):
             for index in range(No_0f_LEDs):
@@ -264,6 +264,20 @@ def morph_between(time_ms=60):
     return scene.frames
 
 
+def handover(time_ms=60):
+    """crossfade(): each layer fades out while the next fades in, both at once."""
+    scene = Scene(time_ms)
+    scene.fade_in(plane("z", 0), RED, steps=12)
+    for z in range(SIZE - 1):                                    # hand the light upwards
+        scene.crossfade(plane("z", z), plane("z", z + 1), hsv((z + 1) / SIZE), steps=12)
+    scene.hold(300)
+    # the regions may overlap: OUTER contains the top layer, and `into` wins there
+    scene.crossfade(plane("z", SIZE - 1), OUTER, dim(CYAN, 0.6), steps=20)
+    scene.hold(400)
+    scene.fade_out(ALL, steps=20)
+    return scene.frames
+
+
 GENERATORS = {
     "breadboard_test": breadboard_test,
     "random_rain": random_rain,
@@ -281,7 +295,8 @@ GENERATORS = {
     "wireframe": wireframe,
     "diagonal_wave": diagonal_wave,
     "three_planes": three_planes,
-    "morph_between": morph_between
+    "morph_between": morph_between,
+    "handover": handover,
 }
 
 if __name__ == "__main__":

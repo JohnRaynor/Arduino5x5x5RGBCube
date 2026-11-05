@@ -156,6 +156,28 @@ def set_frames(new_frames):
     clear_block()
     show_frame(0)
 
+def is_pristine():
+    """True while the pattern is still the single blank frame the editor starts with."""
+    return len(frames) == 1 and not any(any(colour) for colour in frames[0]["colours"])
+
+def insert_frames(new_frames):
+    """Insert frames after the current one and land on the last of them, so
+    repeated Open File / Generate calls chain into one long pattern.
+
+    A pattern that is still the untouched starting frame is replaced instead —
+    otherwise opening a file into a fresh editor would leave a blank frame in
+    front of it. Use New to get back to that state.
+    """
+    new_frames = list(new_frames)
+    if not new_frames:
+        return
+    if is_pristine():
+        set_frames(new_frames)
+        return
+    frames[frameNo + 1:frameNo + 1] = copy.deepcopy(new_frames)
+    clear_block()
+    show_frame(frameNo + len(new_frames))
+
 def nextFrame():
     show_frame(frameNo + 1)
 
@@ -284,7 +306,7 @@ def openFile():
                                           initialdir=file_dialog_dir(), filetypes=bin_filetypes)
     if filename:
         try:
-            set_frames(read_pattern(filename))
+            insert_frames(read_pattern(filename))
         except (OSError, ValueError) as exc:
             messagebox.showerror("Open failed", str(exc), parent=tk_root)
 
@@ -348,7 +370,7 @@ def generate():
             messagebox.showerror("Generator failed", traceback.format_exc(), parent=dialog)
             return
         dialog.destroy()
-        set_frames(list(new_frames))
+        insert_frames(new_frames)
 
     listbox.bind("<<ListboxSelect>>", show_doc)
     listbox.bind("<Double-Button-1>", lambda e: run())

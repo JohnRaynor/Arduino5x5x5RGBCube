@@ -43,3 +43,9 @@
 - Decisions: VDD stays on the verticals (keeps the data return path local to each row); `MAX_MILLIAMPS` to be set to 3000 so the DC socket stays inside its rating; 100 x 160 mm Eurocard stripboard rather than 100 mm square.
 - Sourced: Rapid 05-0310 (0.9 mm tinned copper wire), 47-2566 (1N5819), 20-0989 (5.5 x 2.5 mm chassis socket).
 - Decoupling reconsidered: none inside the cube volume (solid 0.9 mm copper buses are a far better supply than the PCB strips the "100 nF per LED" rule is written for, and a missed data bit costs one frame, not damage). Two or three 100 nF on the base board instead; retrofit at the top-layer corners only if bright transitions sparkle.
+
+## 2026-11-05
+
+- Build under way, going well.
+- Editor: **Open File** and **Generate…** now insert after the current frame and land on the last inserted frame, so repeated calls chain into one long pattern; a still-untouched blank starting frame is replaced instead, so opening into a fresh editor leaves no leading blank. **New** is the way back to an empty pattern. Playlist still replaces.
+- `patterngen`: `Scene.crossfade(out_of, into, colour, steps)` and the general `Scene.fade_many([(region, colour), ...], steps)` move several regions at once; `handover` added to the generators as a worked example.
