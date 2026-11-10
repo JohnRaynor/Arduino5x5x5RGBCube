@@ -36,7 +36,10 @@
 #define SD_CS_PIN       3
 #define NUM_LEDS        125
 #define FRAME_BYTES     (NUM_LEDS * 3 + 2)
-#define MAX_MILLIAMPS   3000       // software current cap; keeps the 5.5x2.5 mm DC socket inside its rating
+// Software current cap. Must be below what the supply can deliver, with margin.
+//   1000  temporary 2 A bench PSU  <-- in use
+//   3000  the 5 V 10 A brick; also keeps the 5.5x2.5 mm DC socket inside its rating
+#define MAX_MILLIAMPS   1000
 #define PREVIEW_HOLD_MS 60000UL    // resume random playback if the PC goes quiet
 #define SERIAL_QUIET_MS 50         // no refreshes this long after any serial byte
 #define SD_BLOCK        64         // bytes per NEXT acknowledgement during an SD write

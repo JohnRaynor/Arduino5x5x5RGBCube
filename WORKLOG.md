@@ -49,3 +49,4 @@
 - Build under way, going well.
 - Editor: **Open File** and **Generate…** now insert after the current frame and land on the last inserted frame, so repeated calls chain into one long pattern; a still-untouched blank starting frame is replaced instead, so opening into a fresh editor leaves no leading blank. **New** is the way back to an empty pattern. Playlist still replaces.
 - `patterngen`: `Scene.crossfade(out_of, into, colour, steps)` and the general `Scene.fade_many([(region, colour), ...], steps)` move several regions at once; `handover` added to the generators as a worked example.
+- Current cap temporarily set to 1000 mA for bench work on a 2 A PSU; the 3000 mA figure for the real 10 A brick is kept as a comment next to it. Recompiled clean (18698 B flash, 1451 B RAM).
