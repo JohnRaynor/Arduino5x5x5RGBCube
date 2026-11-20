@@ -21,6 +21,18 @@ from patterngen import (ALL, CENTRE, CORNERS, EDGES, FACES, MIDDLE, OUTER,
 
 patterns_dir = Path(__file__).with_name("Patterns")
 
+def test_fade_many(time_ms=100):
+    """fade(): fade many regions at once, each to a different colour."""
+    scene = Scene(time_ms)
+    scene.fade_many(((CORNERS, CYAN), (FACES["left"], RED), (FACES["right"], GREEN)), steps=100)
+    # scene.paint(ALL, WHITE)
+    # scene.fade(ALL, RED, steps=10)
+    # scene.fade(ALL, GREEN, steps=10)
+    # scene.fade(ALL, BLUE, steps=10)
+    # scene.fade(ALL, WHITE, steps=10)
+    return scene.frames
+
+
 def random_rain(time_ms=50):
     """simulate rain and splash effects."""
     scene = Scene(time_ms)
@@ -297,6 +309,7 @@ GENERATORS = {
     "three_planes": three_planes,
     "morph_between": morph_between,
     "handover": handover,
+    "test_fade_many": test_fade_many
 }
 
 if __name__ == "__main__":
