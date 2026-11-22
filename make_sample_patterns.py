@@ -18,13 +18,22 @@ from patterns import new_frame, write_pattern
 from patterngen import (ALL, CENTRE, CORNERS, EDGES, FACES, MIDDLE, OUTER,
                         BLUE, CYAN, GREEN, MAGENTA, ORANGE, RED, WHITE, YELLOW,
                         Scene, ball, column, cube, dim, hsv, line, plane, select, square)
+def RANDOMCOLOUR():
+    """Return a random colour."""
+    return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
-patterns_dir = Path(__file__).with_name("Patterns")
 
 def test_fade_many(time_ms=100):
     """fade(): fade many regions at once, each to a different colour."""
     scene = Scene(time_ms)
-    scene.fade_many(((CORNERS, CYAN), (FACES["left"], RED), (FACES["right"], GREEN)), steps=100)
+    for z in range(30):
+        column1 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
+        column2 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
+        column3 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
+        scene.fade_many(((column(*column1), RANDOMCOLOUR()), (column(*column2), RANDOMCOLOUR()), (column(*column3), RANDOMCOLOUR())), steps=30)
+
+    
+    # scene.fade_many(((CORNERS, CYAN), (FACES["left"], RED), (FACES["right"], GREEN)), steps=100)
     # scene.paint(ALL, WHITE)
     # scene.fade(ALL, RED, steps=10)
     # scene.fade(ALL, GREEN, steps=10)
