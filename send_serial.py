@@ -36,7 +36,17 @@ def _encode_frames(frames):
     return b"".join(encode_frame(frame) for frame in frames)
 
 
+# Warnings the Arduino printed during its last boot, e.g. a missing SD card.
+# Set by _connect(); the caller can show them without the command having failed.
+last_boot_warnings = []
+
+
 def _wait_for(ser, expected, timeout):
+    """Read lines until `expected` arrives; returns the other lines seen on the way.
+
+    Anything that is not an ERR is passed over, so a WARN in the boot banner (a
+    missing SD card, say) does not abort the command that follows it.
+    """
     deadline = time.monotonic() + timeout
     responses = []
     while time.monotonic() < deadline:
@@ -45,7 +55,7 @@ def _wait_for(ser, expected, timeout):
             continue
         responses.append(response)
         if response == expected:
-            return
+            return responses[:-1]
         if response.startswith("ERR"):
             raise RuntimeError(f"Arduino reported: {response}")
     detail = "; ".join(responses) if responses else "no response"
@@ -75,11 +85,13 @@ def suggest_sd_name(local_path):
 
 
 def _connect(port):
+    global last_boot_warnings
     ser = serial.Serial(port, BAUD, timeout=0.25, write_timeout=5)
     ser.reset_input_buffer()
     ser.reset_output_buffer()
     time.sleep(2)  # Opening USB serial normally resets the Arduino.
-    _wait_for(ser, "READY", 8)
+    banner = _wait_for(ser, "READY", 8)
+    last_boot_warnings = [line[5:].strip() for line in banner if line.startswith("WARN")]
     return ser
 
 

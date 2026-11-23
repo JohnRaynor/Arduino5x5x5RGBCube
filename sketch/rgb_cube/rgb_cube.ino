@@ -248,7 +248,9 @@ void setup() {
 
   pinMode(SD_CS_PIN, OUTPUT);
   sdOk = sd.begin(SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(8)));
-  if (!sdOk) serialError(F("SD initialisation failed"));   // previews still work
+  // WARN, not ERR: the PC treats any ERR line as fatal to the command in flight,
+  // and this one arrives just before READY. Previews work fine without a card.
+  if (!sdOk) Serial.println(F("WARN SD initialisation failed; previews still work"));
   randomSeed(analogRead(A0));
   countPatternFiles();
   Serial.println(F("READY"));

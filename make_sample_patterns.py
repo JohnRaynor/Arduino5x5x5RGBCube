@@ -18,6 +18,8 @@ from patterns import new_frame, write_pattern
 from patterngen import (ALL, CENTRE, CORNERS, EDGES, FACES, MIDDLE, OUTER,
                         BLUE, CYAN, GREEN, MAGENTA, ORANGE, RED, WHITE, YELLOW,
                         Scene, ball, column, cube, dim, hsv, line, plane, select, square)
+
+patterns_dir = Path(__file__).parent / "Patterns"
 def RANDOMCOLOUR():
     """Return a random colour."""
     return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -64,7 +66,7 @@ def breadboard_test(time_ms=60):
     """A simple test pattern for a breadboard test."""
     """Lights LEDs one at a time in chain order:"""
     frames = []
-    No_0f_LEDs = 25
+    No_0f_LEDs = 125
     #for repeats in range(1):    
     for colours in (WHITE, RED, GREEN, BLUE):
         for index in range(No_0f_LEDs):
