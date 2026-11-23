@@ -245,6 +245,27 @@ void processReceivedByte(uint8_t value) {
 }
 
 // ------------------------------------------------------------------ main ----
+// Bring the card back to a state where it will accept the init sequence.
+//
+// Opening the serial port resets the Nano, and random playback is normally
+// reading when that happens, so the card is left part-way through a
+// transaction. A reset does not power-cycle it, so it comes back still
+// mid-transaction and ignores sd.begin(). Idle clocks with CS high end the
+// transaction and return it to the state it is in at power-up; the retries
+// cover a card that needs a moment longer.
+bool beginSd() {
+  digitalWrite(SD_CS_PIN, HIGH);
+  SPI.begin();
+  SPI.beginTransaction(SPISettings(250000, MSBFIRST, SPI_MODE0));
+  for (uint8_t i = 0; i < 20; i++) SPI.transfer(0xFF);   // 160 clocks, spec asks for 74
+  SPI.endTransaction();
+  for (uint8_t attempt = 0; attempt < 3; attempt++) {
+    if (sd.begin(SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(SD_SCK_SPEED)))) return true;
+    delay(50);
+  }
+  return false;
+}
+
 void setup() {
   Serial.begin(115200);
   FastLED.addLeds<LED_TYPE, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS);
@@ -253,7 +274,7 @@ void setup() {
   FastLED.clear(true);
 
   pinMode(SD_CS_PIN, OUTPUT);
-  sdOk = sd.begin(SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(SD_SCK_SPEED)));
+  sdOk = beginSd();
   // WARN, not ERR: the PC treats any ERR line as fatal to the command in flight,
   // and this one arrives just before READY. Previews work fine without a card.
   if (!sdOk) Serial.println(F("WARN SD initialisation failed; previews still work"));
