@@ -18,6 +18,7 @@ from serial import SerialException
 
 from cube_layout import SIZE, XYZ, layer_indices, led_index
 from patterns import MAX_TIME, MIN_TIME, new_frame, read_pattern, write_pattern
+import send_serial
 from send_serial import preview_frames, suggest_sd_name, write_frames_to_sd
 
 # ---------------------------------------------------------------- layout ----
@@ -513,6 +514,15 @@ def ask_after_preview():
     tk_root.wait_window(dialog)
     return choice["value"]
 
+warnings_shown = set()
+
+def report_boot_warnings():
+    """Tell the user once per session about anything the Arduino warned about at boot."""
+    fresh = [text for text in send_serial.last_boot_warnings if text not in warnings_shown]
+    if fresh:
+        warnings_shown.update(fresh)
+        messagebox.showwarning("Arduino reported", chr(10).join(fresh), parent=tk_root)
+
 def previewCube():
     port = arduino_port()
     if not port:
@@ -521,6 +531,7 @@ def previewCube():
         preview_frames(port, frames, after_preview=ask_after_preview)
     except Exception as exc:
         serial_error("LED cube preview failed", exc)
+    report_boot_warnings()
 
 def saveToArduinoSD():
     """Save locally first, then write the same name (8.3 form) to the Arduino SD card."""
