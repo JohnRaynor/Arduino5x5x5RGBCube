@@ -94,6 +94,14 @@ Everything else is the same as the 4×4×4 editor:
 | **Playlist** | Choose several `.bin` files, order them, and load them as one pattern. Unlike Open File, this still replaces what is loaded. |
 | **Generate…** | Pick a generator from `make_sample_patterns.py` and insert its frames directly, no file needed — same insert-and-chain behaviour as Open File. The generator code is reloaded every time, so edit, save, click Generate. |
 
+Set the environment variable `CUBE_SERIAL_LOG` to a file path to record the
+conversation with the cube — every command sent and every line received, with
+timestamps. Off unless set; useful for intermittent faults:
+
+```bash
+CUBE_SERIAL_LOG=cube.log python rgb_cube_editor.py
+```
+
 The serial port is asked for once and remembered in `.led_cube_settings.json`.
 The prompt lists the ports the OS can actually see, likely Arduino adapters
 first — on a machine with Bluetooth, most of the COM numbers are decoys. If the

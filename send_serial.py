@@ -36,6 +36,23 @@ def _encode_frames(frames):
     return b"".join(encode_frame(frame) for frame in frames)
 
 
+# Set CUBE_SERIAL_LOG to a file path to record the conversation with the cube.
+# Off by default; it exists so an intermittent fault can be captured as it happens.
+import os
+
+log_path = os.environ.get("CUBE_SERIAL_LOG")
+
+
+def _log(text):
+    if not log_path:
+        return
+    try:
+        with open(log_path, "a", encoding="utf-8") as handle:
+            handle.write(f"{time.monotonic():10.3f}  {text}" + chr(10))
+    except OSError:
+        pass
+
+
 LIKELY_ADAPTERS = ("arduino", "ch340", "ch341", "cp210", "ftdi", "wch", "usb serial", "usb-serial")
 
 
@@ -71,11 +88,19 @@ def _wait_for(ser, expected, timeout):
         response = ser.readline().decode("ascii", errors="replace").strip()
         if not response:
             continue
+        _log("<- " + response)
         responses.append(response)
         if response == expected:
             return responses[:-1]
         if response.startswith("ERR"):
             raise RuntimeError(f"Arduino reported: {response}")
+        if response == "READY" and expected != "READY":
+            # READY is only printed by setup(), so the board restarted under us.
+            raise RuntimeError(
+                "The Arduino restarted in the middle of the command: it sent READY, "
+                "which only happens at boot. Nothing the PC sends can cause that, so "
+                "look at power (a sagging supply browning the board out as the cube "
+                "lights up) or a loose USB lead.")
     detail = "; ".join(responses) if responses else "no response"
     raise TimeoutError(f"Expected {expected}; received {detail}.")
 
@@ -114,6 +139,8 @@ def _connect(port):
 
 
 def _command(ser, payload):
+    _log("-> " + payload[:5].decode("ascii", errors="replace")
+         + (f" +{len(payload) - 5} bytes" if len(payload) > 5 else ""))
     ser.write(PREAMBLE + payload)
     ser.flush()
 

@@ -531,6 +531,7 @@ def previewCube():
         preview_frames(port, frames, after_preview=ask_after_preview)
     except Exception as exc:
         serial_error("LED cube preview failed", exc)
+        return                      # one dialog, not two: the error is the news
     report_boot_warnings()
 
 def saveToArduinoSD():
