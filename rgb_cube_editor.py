@@ -86,7 +86,6 @@ class Button:
         self.fillColors = {"normal": "#cfe2f5", "hover": "#a6c8ea", "pressed": "#7fc47f"}
         self.buttonSurface = pygame.Surface((width, height))
         self.buttonRect = pygame.Rect(x, y, width, height)
-        self.alreadyPressed = False
         button_registry[self.name] = self
         self.set_text(buttonText)
 
@@ -95,18 +94,23 @@ class Button:
             self.text = new_text
             self.buttonSurf = font.render(self.text, True, (20, 20, 20))
 
-    def process(self):
-        mousePos = pygame.mouse.get_pos()
-        self.buttonSurface.fill(self.fillColors["normal"])
-        if self.buttonRect.collidepoint(mousePos):
-            self.buttonSurface.fill(self.fillColors["hover"])
-            if pygame.mouse.get_pressed(num_buttons=3)[0]:
-                self.buttonSurface.fill(self.fillColors["pressed"])
-                if self.onclickFunction and not self.alreadyPressed:
-                    self.onclickFunction()
-                    self.alreadyPressed = True
-            else:
-                self.alreadyPressed = False
+    def press(self):
+        """Run the button's action, then drop any clicks queued while it ran.
+
+        Actions open modal dialogs and can block for a long time (a preview runs
+        for as long as the pattern lasts). Without the flush, a click that landed
+        anywhere over this window meanwhile would fire whatever button sits there
+        the moment we return.
+        """
+        if self.onclickFunction:
+            self.onclickFunction()
+        pygame.event.clear()
+
+    def draw(self):
+        """Drawing only — clicks arrive as events, so nothing here has side effects."""
+        hovered = self.buttonRect.collidepoint(pygame.mouse.get_pos())
+        held = hovered and pygame.mouse.get_pressed(num_buttons=3)[0]
+        self.buttonSurface.fill(self.fillColors["pressed" if held else "hover" if hovered else "normal"])
         self.buttonSurface.blit(self.buttonSurf, [
             self.buttonRect.width / 2 - self.buttonSurf.get_rect().width / 2,
             self.buttonRect.height / 2 - self.buttonSurf.get_rect().height / 2,
@@ -445,10 +449,18 @@ def playlist():
         set_frames(combined)
 
 # ---------------------------------------------------------------- serial ----
+NEWLINE = chr(10)
+
 def choose_port():
     global last_serial_port
-    selected_port = simpledialog.askstring("Arduino connection", "Serial port (for example COM3):",
-                                           initialvalue=last_serial_port or "COM3", parent=tk_root)
+    ports = send_serial.available_ports()
+    lines = [f"    {device}   {description}" for device, description in ports]
+    found = NEWLINE.join(lines) if lines else "    (none - check the USB lead, and close the Serial Monitor)"
+    suggestion = (last_serial_port if any(last_serial_port == device for device, _ in ports)
+                  else ports[0][0] if ports else last_serial_port or "COM3")
+    prompt = "Serial ports detected:" + NEWLINE + found + NEWLINE + NEWLINE + "Use which port?"
+    selected_port = simpledialog.askstring("Arduino connection", prompt,
+                                           initialvalue=suggestion, parent=tk_root)
     if selected_port:
         last_serial_port = selected_port.strip()
         try:
@@ -458,7 +470,21 @@ def choose_port():
     return last_serial_port if selected_port else None
 
 def arduino_port():
-    return last_serial_port or choose_port()
+    """The saved port, but only if the OS can still see it.
+
+    Windows renumbers USB serial adapters across reboots and unplugs, so the
+    saved port regularly points at nothing. Asking again beats a confusing
+    "could not open COM5" several seconds later.
+    """
+    if last_serial_port:
+        devices = [device for device, _ in send_serial.available_ports()]
+        if last_serial_port in devices:
+            return last_serial_port
+        if devices:
+            messagebox.showinfo("Arduino connection",
+                                f"{last_serial_port} is no longer there. Pick one of the ports found.",
+                                parent=tk_root)
+    return choose_port()
 
 def serial_error(title, exc):
     if isinstance(exc, SerialException):
@@ -585,6 +611,11 @@ level_rects = [pygame.Rect(palette_pos[0] + i * (swatch + 6), palette_pos[1] + s
 
 def click_at(pos, button):
     global base_colour, level, current_layer
+    if button == 1:
+        for btn in button_registry.values():
+            if btn.buttonRect.collidepoint(pos):
+                btn.press()
+                return
     for index, rect in enumerate(led_rect):
         if rect.collidepoint(pos):
             current_layer = XYZ[index][2]
@@ -634,7 +665,7 @@ while True:
     draw_cube()
     draw_palette()
     for btn in button_registry.values():
-        btn.process()
+        btn.draw()
     show_text_boxes()
     pygame.display.flip()
     if run_frames:

@@ -95,6 +95,10 @@ Everything else is the same as the 4×4×4 editor:
 | **Generate…** | Pick a generator from `make_sample_patterns.py` and insert its frames directly, no file needed — same insert-and-chain behaviour as Open File. The generator code is reloaded every time, so edit, save, click Generate. |
 
 The serial port is asked for once and remembered in `.led_cube_settings.json`.
+The prompt lists the ports the OS can actually see, likely Arduino adapters
+first — on a machine with Bluetooth, most of the COM numbers are decoys. If the
+saved port has gone (Windows renumbers USB serial adapters across reboots and
+unplugs) the editor says so and asks again rather than failing later.
 
 ## Pattern file format
 

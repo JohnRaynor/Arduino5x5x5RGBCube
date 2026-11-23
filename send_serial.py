@@ -36,6 +36,24 @@ def _encode_frames(frames):
     return b"".join(encode_frame(frame) for frame in frames)
 
 
+LIKELY_ADAPTERS = ("arduino", "ch340", "ch341", "cp210", "ftdi", "wch", "usb serial", "usb-serial")
+
+
+def available_ports():
+    """[(device, description)] for every serial port the OS can see.
+
+    Likely Arduino adapters come first, so the caller can offer a sensible
+    default. Windows renumbers these across reboots, so a port that worked
+    yesterday may simply not be there today.
+    """
+    from serial.tools import list_ports
+    ports = [(port.device, (port.description or "").strip()) for port in list_ports.comports()]
+    def unlikely(entry):
+        text = f"{entry[0]} {entry[1]}".lower()
+        return not any(name in text for name in LIKELY_ADAPTERS)
+    return sorted(ports, key=unlikely)
+
+
 # Warnings the Arduino printed during its last boot, e.g. a missing SD card.
 # Set by _connect(); the caller can show them without the command having failed.
 last_boot_warnings = []
