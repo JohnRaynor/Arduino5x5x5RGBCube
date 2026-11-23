@@ -211,6 +211,15 @@ frame["colours"][led_index(x=2, y=0, z=4)] = [255, 80, 0]
 write_pattern("Patterns/example.bin", [frame])
 ```
 
+## Checking the SD card
+
+`sketch/sd_check/` is a standalone test: no FastLED, no cube, no protocol, so
+whatever it reports is about the card and its wiring and nothing else. Flash it,
+open the Serial Monitor at 115200 and read the report. It tries `begin()` at 1,
+4 and 8 MHz in turn — if the slow one works and the fast one does not, the
+wiring is too long or too noisy rather than the card being faulty — then lists
+the root directory and reads every file right through.
+
 ## The Arduino sketch
 
 `sketch/rgb_cube/rgb_cube.ino`. Open it in the Arduino IDE and upload. At the
