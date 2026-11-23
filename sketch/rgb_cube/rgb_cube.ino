@@ -42,6 +42,12 @@
 #define MAX_MILLIAMPS   1000
 #define PREVIEW_HOLD_MS 60000UL    // resume random playback if the PC goes quiet
 #define SERIAL_QUIET_MS 50         // no refreshes this long after any serial byte
+// SD SPI clock. 8 was fine on short, tidy wiring; breadboard jumpers to the
+// card module are long enough to make 8 MHz marginal, and a card that stops
+// answering mid-transfer leaves SdFat spinning with the cube frozen. Drop to
+// 1 if reads are still unreliable - playback needs 377 bytes per frame, so
+// even 1 MHz is many times faster than required.
+#define SD_SCK_SPEED    4
 #define SD_BLOCK        64         // bytes per NEXT acknowledgement during an SD write
 
 CRGB leds[NUM_LEDS];
@@ -247,7 +253,7 @@ void setup() {
   FastLED.clear(true);
 
   pinMode(SD_CS_PIN, OUTPUT);
-  sdOk = sd.begin(SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(8)));
+  sdOk = sd.begin(SdSpiConfig(SD_CS_PIN, SHARED_SPI, SD_SCK_MHZ(SD_SCK_SPEED)));
   // WARN, not ERR: the PC treats any ERR line as fatal to the command in flight,
   // and this one arrives just before READY. Previews work fine without a card.
   if (!sdOk) Serial.println(F("WARN SD initialisation failed; previews still work"));
