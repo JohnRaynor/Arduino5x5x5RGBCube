@@ -514,14 +514,18 @@ def ask_after_preview():
     tk_root.wait_window(dialog)
     return choice["value"]
 
-warnings_shown = set()
+status_message = ""
 
 def report_boot_warnings():
-    """Tell the user once per session about anything the Arduino warned about at boot."""
-    fresh = [text for text in send_serial.last_boot_warnings if text not in warnings_shown]
-    if fresh:
-        warnings_shown.update(fresh)
-        messagebox.showwarning("Arduino reported", chr(10).join(fresh), parent=tk_root)
+    """Note anything the Arduino warned about at boot, for the status line.
+
+    These are warnings, not failures - a missing SD card does not stop a
+    preview - so they belong in the window, not in a dialog on top of work
+    that succeeded.
+    """
+    global status_message
+    status_message = ("Arduino: " + "; ".join(send_serial.last_boot_warnings)
+                      if send_serial.last_boot_warnings else "")
 
 def previewCube():
     port = arduino_port()
@@ -550,6 +554,7 @@ def saveToArduinoSD():
             return
     try:
         write_frames_to_sd(port, sd_name, frames)
+        report_boot_warnings()
         messagebox.showinfo("LED cube", f"Saved {sd_name} to the Arduino SD card.", parent=tk_root)
     except Exception as exc:
         serial_error("SD card transfer failed", exc)
@@ -592,6 +597,8 @@ Button(palette_pos[0] + 13 * (swatch + 6) + 20, palette_pos[1] - 1, 100, bh, "Cu
 
 frame_text, time_text, block_text = readouts["frame"], readouts["time"], readouts["block"]
 paint_text = TextBox("", (palette_pos[0], palette_pos[1] + 2 * (swatch + 6) + 10), use_font=small_font)
+status_text = TextBox("", (bx, by + 7 * row), use_font=small_font,
+                      text_color=(255, 210, 120), bg_color=(60, 48, 28))
 update_block_text()
 
 def show_text_boxes():
@@ -601,6 +608,9 @@ def show_text_boxes():
     paint_text.update_text(f"Paint colour  R {r}  G {g}  B {b}      left-click paints, right-click switches off")
     for box in (frame_text, time_text, block_text, paint_text):
         box.draw(screen)
+    if status_message:                      # only takes up room when there is news
+        status_text.update_text(status_message)
+        status_text.draw(screen)
     # buttons whose labels follow the state
     button_registry["Play"].set_text("Stop" if run_frames else "Play")
     button_registry["Fill layer"].set_text(f"Fill layer {current_layer}")
