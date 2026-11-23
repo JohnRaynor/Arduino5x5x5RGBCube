@@ -21,6 +21,7 @@ with single-line ASCII messages.
 """
 import struct
 import time
+from pathlib import Path
 
 import serial
 
@@ -36,21 +37,37 @@ def _encode_frames(frames):
     return b"".join(encode_frame(frame) for frame in frames)
 
 
-# Set CUBE_SERIAL_LOG to a file path to record the conversation with the cube.
-# Off by default; it exists so an intermittent fault can be captured as it happens.
+# Every command sent and every line received is recorded in cube_serial.log,
+# beside these scripts. It costs a few lines a second and it is the only way to
+# see what happened when a fault is intermittent. Set the CUBE_SERIAL_LOG
+# environment variable to another path to move it, or to "off" to stop logging.
+import datetime
 import os
 
-log_path = os.environ.get("CUBE_SERIAL_LOG")
+LOG_SIZE_LIMIT = 1_000_000          # start a fresh file past about 1 MB
+
+
+def _log_file():
+    setting = os.environ.get("CUBE_SERIAL_LOG")
+    if setting is None:
+        return Path(__file__).with_name("cube_serial.log")
+    if setting.strip().lower() in ("", "off", "0", "no", "none"):
+        return None
+    return Path(setting)
 
 
 def _log(text):
-    if not log_path:
+    path = _log_file()
+    if path is None:
         return
     try:
-        with open(log_path, "a", encoding="utf-8") as handle:
-            handle.write(f"{time.monotonic():10.3f}  {text}" + chr(10))
+        if path.exists() and path.stat().st_size > LOG_SIZE_LIMIT:
+            path.unlink()
+        stamp = datetime.datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        with open(path, "a", encoding="utf-8") as handle:
+            handle.write(stamp + "  " + text + chr(10))
     except OSError:
-        pass
+        pass                        # logging must never break a transfer
 
 
 LIKELY_ADAPTERS = ("arduino", "ch340", "ch341", "cp210", "ftdi", "wch", "usb serial", "usb-serial")
@@ -129,6 +146,8 @@ def suggest_sd_name(local_path):
 
 def _connect(port):
     global last_boot_warnings
+    _log("=== opening " + str(port) + " on "
+         + datetime.datetime.now().strftime("%Y-%m-%d") + " ===")
     ser = serial.Serial(port, BAUD, timeout=0.25, write_timeout=5)
     ser.reset_input_buffer()
     ser.reset_output_buffer()

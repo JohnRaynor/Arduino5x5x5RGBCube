@@ -94,12 +94,26 @@ Everything else is the same as the 4×4×4 editor:
 | **Playlist** | Choose several `.bin` files, order them, and load them as one pattern. Unlike Open File, this still replaces what is loaded. |
 | **Generate…** | Pick a generator from `make_sample_patterns.py` and insert its frames directly, no file needed — same insert-and-chain behaviour as Open File. The generator code is reloaded every time, so edit, save, click Generate. |
 
-Set the environment variable `CUBE_SERIAL_LOG` to a file path to record the
-conversation with the cube — every command sent and every line received, with
-timestamps. Off unless set; useful for intermittent faults:
+### The serial log
 
-```bash
-CUBE_SERIAL_LOG=cube.log python rgb_cube_editor.py
+Every command sent to the cube and every line it sends back is recorded in
+**`cube_serial.log`**, beside these scripts. Nothing to switch on: start the
+editor however you normally do, reproduce a fault, then open the file. It is
+the only way to see what happened when a fault is intermittent.
+
+```
+13:03:47.444  <- READY
+13:03:47.445  -> CUBEP +377 bytes
+13:03:47.447  <- FRAME
+13:03:47.648  -> CUBER
+13:03:47.649  <- RESUMED
+```
+
+A fresh file is started once it passes about 1 MB. To move it elsewhere, or to
+turn it off, set the `CUBE_SERIAL_LOG` environment variable — in PowerShell:
+
+```powershell
+$env:CUBE_SERIAL_LOG = "off"
 ```
 
 The serial port is asked for once and remembered in `.led_cube_settings.json`.
