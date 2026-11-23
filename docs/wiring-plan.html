@@ -444,6 +444,29 @@ FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS);</code></pre>
     <figcaption><b>Controller.</b> The cube is fed straight from the supply; the Nano takes its 5 V through the Schottky, which drops about 0.25 V at the board's 100 mA or so and stops the USB and the brick from fighting when both are connected. The SD module is unchanged from the 4×4×4 — hardware SPI on D11/D12/D13 with chip select on D3, and it must be the module with the onboard regulator, fed from 5 V.</figcaption>
   </figure>
 
+  <h3>If you forget to switch the supply on</h3>
+
+  <p>The cube cannot draw its current through the USB lead, and the diode is
+  what guarantees it. Its anode is on the cube's 5 V rail and its cathode on
+  the Nano's 5 V pin, so current flows supply &rarr; Nano and never the other
+  way. With the brick off and USB plugged in, the Nano runs, the cube stays
+  dark, and the USB port supplies only the board's own 100 mA or so. A lit cube
+  wants up to 3 A against a USB port's 500 mA, so this is the difference
+  between a non-event and a damaged port.</p>
+
+  <p>One path does remain: D6 drives the first LED's DIN whether or not the
+  cube is powered, and that pin clamps to the LED's own supply rail. The 330
+  &#937; resistor holds it to about 10 mA, well inside the ATmega's 40 mA
+  limit, so nothing is harmed. It is the same leak that destroys an LED wired
+  with its supply pins reversed, which is why that resistor is not optional.</p>
+
+  <div class="note">
+    <p><b>Check the diode is the right way round once, on the bench.</b> Brick
+    off, USB in, run a preview: the cube must stay <i>completely</i> dark. If
+    any LED glows even faintly, the diode is reversed and the USB port is
+    feeding the cube - which also means the cube will not run standalone.</p>
+  </div>
+
   <h2>Parts</h2>
 
   <div class="wide">
