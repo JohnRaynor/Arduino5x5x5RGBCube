@@ -16,7 +16,8 @@ Typical generator:
         scene.fade_out(ALL, steps=30)            # 30 frames, everything -> black
         return scene.frames
 """
-import colorsys
+import colorsys, random
+from pathlib import Path
 import copy
 
 from cube_layout import LED_COUNT, SIZE, XYZ, led_index
@@ -37,6 +38,21 @@ BLUE = (0, 0, 255)
 PURPLE = (160, 0, 255)
 MAGENTA = (255, 0, 255)
 
+def RANDOMCOLOUR():
+    """Return a random colour."""
+    return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+def RANDOMRED():
+    """Return a random red-ish colour."""
+    return (random.randint(128, 255), random.randint(0, 64), random.randint(0, 64))
+
+def RANDOMGREEN():
+    """Return a random green-ish colour."""
+    return (random.randint(0, 64), random.randint(128, 255), random.randint(0, 64))
+
+def RANDOMBLUE():
+    """Return a random blue-ish colour."""
+    return (random.randint(0, 64), random.randint(0, 64), random.randint(128, 255))
 
 def hsv(h, s=1.0, v=1.0):
     """Colour from hue 0..1 (wraps), saturation and value."""

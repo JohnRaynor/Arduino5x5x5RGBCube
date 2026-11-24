@@ -111,3 +111,5 @@ and slow.
   **Generate…** runs it, popping up a window. Harmless.
 - The editor does not auto-rerun a generator when the file changes; offered,
   not built.
+- `python make_sample_patterns.py <generator>` now runs just that generator and loops it in the cube_live window (add `--cube` for the real thing); with no argument it still writes every .bin as before. There was previously no way to run a single generator outside the editor, which is what made cube_live hard to use.
+- cube_live window fixes found while testing: layer labels were re-rendered every frame, playback ignored frame times entirely (a pattern raced past), and closing the window did not stop the script. Playback now paces against actual draw cost - measured accurate to a few percent at 10, 25 and 50 ms frames.

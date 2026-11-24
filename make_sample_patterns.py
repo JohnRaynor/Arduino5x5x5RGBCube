@@ -16,13 +16,11 @@ from pathlib import Path
 from cube_layout import SIZE, led_index
 from patterns import new_frame, write_pattern
 from patterngen import (ALL, CENTRE, CORNERS, EDGES, FACES, MIDDLE, OUTER,
-                        BLUE, CYAN, GREEN, MAGENTA, ORANGE, RED, WHITE, YELLOW,
+                        BLUE, CYAN, GREEN, MAGENTA, ORANGE, RED, WHITE, YELLOW, RANDOMCOLOUR,
+                        RANDOMBLUE, RANDOMGREEN, RANDOMRED, 
                         Scene, ball, column, cube, dim, hsv, line, plane, select, square)
 
 patterns_dir = Path(__file__).parent / "Patterns"
-def RANDOMCOLOUR():
-    """Return a random colour."""
-    return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
 
 def test_fade_many(time_ms=100):
@@ -33,16 +31,35 @@ def test_fade_many(time_ms=100):
         column2 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
         column3 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
         scene.fade_many(((column(*column1), RANDOMCOLOUR()), (column(*column2), RANDOMCOLOUR()), (column(*column3), RANDOMCOLOUR())), steps=30)
-
-    
-    # scene.fade_many(((CORNERS, CYAN), (FACES["left"], RED), (FACES["right"], GREEN)), steps=100)
-    # scene.paint(ALL, WHITE)
-    # scene.fade(ALL, RED, steps=10)
-    # scene.fade(ALL, GREEN, steps=10)
-    # scene.fade(ALL, BLUE, steps=10)
-    # scene.fade(ALL, WHITE, steps=10)
     return scene.frames
 
+
+def morph_between(time_ms=60):
+    """Scene.morph(): cross-fade between complete frames from other generators."""
+    scene = Scene(time_ms)
+    scene.load(rainbow_layers()[0])                              # start from another generator's frame
+    scene.hold(500)
+    target = Scene().paint(OUTER, RED).paint(MIDDLE, BLUE).paint(CENTRE, WHITE).current
+    scene.morph(target, steps=25)
+    scene.hold(500)
+    scene.morph(rising_plane()[2], steps=25)
+    scene.hold(500)
+    scene.fade_out(ALL, steps=15)
+    return scene.frames
+
+
+def handover(time_ms=60):
+    """crossfade(): each layer fades out while the next fades in, both at once."""
+    scene = Scene(time_ms)
+    scene.fade_in(plane("z", 0), RED, steps=12)
+    for z in range(SIZE - 1):                                    # hand the light upwards
+        scene.crossfade(plane("z", z), plane("z", z + 1), hsv((z + 1) / SIZE), steps=12)
+    scene.hold(300)
+    # the regions may overlap: OUTER contains the top layer, and `into` wins there
+    scene.crossfade(plane("z", SIZE - 1), OUTER, dim(CYAN, 0.6), steps=20)
+    scene.hold(400)
+    scene.fade_out(ALL, steps=20)
+    return scene.frames
 
 def random_rain(time_ms=50):
     """simulate rain and splash effects."""
@@ -273,33 +290,6 @@ def three_planes(time_ms=100):
     return scene.frames
 
 
-def morph_between(time_ms=60):
-    """Scene.morph(): cross-fade between complete frames from other generators."""
-    scene = Scene(time_ms)
-    scene.load(rainbow_layers()[0])                              # start from another generator's frame
-    scene.hold(500)
-    target = Scene().paint(OUTER, RED).paint(MIDDLE, BLUE).paint(CENTRE, WHITE).current
-    scene.morph(target, steps=25)
-    scene.hold(500)
-    scene.morph(rising_plane()[2], steps=25)
-    scene.hold(500)
-    scene.fade_out(ALL, steps=15)
-    return scene.frames
-
-
-def handover(time_ms=60):
-    """crossfade(): each layer fades out while the next fades in, both at once."""
-    scene = Scene(time_ms)
-    scene.fade_in(plane("z", 0), RED, steps=12)
-    for z in range(SIZE - 1):                                    # hand the light upwards
-        scene.crossfade(plane("z", z), plane("z", z + 1), hsv((z + 1) / SIZE), steps=12)
-    scene.hold(300)
-    # the regions may overlap: OUTER contains the top layer, and `into` wins there
-    scene.crossfade(plane("z", SIZE - 1), OUTER, dim(CYAN, 0.6), steps=20)
-    scene.hold(400)
-    scene.fade_out(ALL, steps=20)
-    return scene.frames
-
 
 GENERATORS = {
     "breadboard_test": breadboard_test,
@@ -324,8 +314,35 @@ GENERATORS = {
 }
 
 if __name__ == "__main__":
-    patterns_dir.mkdir(exist_ok=True)
-    for name, generator in GENERATORS.items():
-        frames = generator()
-        write_pattern(patterns_dir / f"{name}.bin", frames)
-        print(f"{name}.bin: {len(frames)} frames")
+    import sys
+
+    args = sys.argv[1:]
+    on_cube = "--cube" in args
+    wanted = [a for a in args if not a.startswith("-")]
+
+    if wanted:
+        # Watch one generator:  python make_sample_patterns.py test_fade_many
+        # Add --cube to send it to the real cube instead of a window.
+        import cube_live
+        name = wanted[0]
+        if name not in GENERATORS:
+            print(f"No generator called {name!r}. Try one of:")
+            for known in GENERATORS:
+                print("   ", known)
+            sys.exit(1)
+        if on_cube:
+            cube_live.target("cube")
+        frames = GENERATORS[name]()
+        print(f"{name}: {len(frames)} frames, "
+              f"{sum(f['time'] for f in frames) / 1000:.1f} s - close the window to stop")
+        try:
+            while True:
+                cube_live.play(frames)
+        except KeyboardInterrupt:
+            pass
+    else:
+        patterns_dir.mkdir(exist_ok=True)
+        for name, generator in GENERATORS.items():
+            frames = generator()
+            write_pattern(patterns_dir / f"{name}.bin", frames)
+            print(f"{name}.bin: {len(frames)} frames")

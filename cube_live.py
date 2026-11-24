@@ -27,6 +27,7 @@ a bare list of 125 colours, or a list of frames to play in sequence.
 """
 import atexit
 import json
+import time
 from pathlib import Path
 
 from cube_layout import LED_COUNT, SIZE, XYZ, led_index
@@ -38,7 +39,7 @@ _serial = None
 _screen = None
 _pygame = None
 _positions = None
-_font = None
+_labels = None
 
 settings_path = Path(__file__).with_name(".led_cube_settings.json")
 
@@ -133,7 +134,7 @@ def _dot_positions():
 
 
 def _window():
-    global _screen, _pygame, _positions, _font
+    global _screen, _pygame, _positions, _labels
     if _screen is None:
         import pygame
         _pygame = pygame
@@ -141,23 +142,35 @@ def _window():
         _screen = pygame.display.set_mode(WIN)
         pygame.display.set_caption("cube_live")
         _positions = _dot_positions()
-        _font = pygame.font.SysFont("Arial", 13)
+        font = pygame.font.SysFont("Arial", 13)
+        _labels = []                        # fixed text: render it once, not per frame
+        for z in range(SIZE):
+            tag = "top" if z == SIZE - 1 else "bottom" if z == 0 else ""
+            surface = font.render(f"z = {z} {tag}".strip(), True, (150, 150, 150))
+            _labels.append((surface,
+                            (6, V_OFFSET + (SIZE - 1 - z) * V_SPACING + 4 * V_STAGGER - 18)))
     return _screen
 
 
 def _draw(frame):
+    start = time.monotonic()
     screen = _window()
-    _pygame.event.pump()                    # keep the window answering the OS
+    for event in _pygame.event.get():       # keep the window answering the OS
+        if event.type == _pygame.QUIT:
+            raise SystemExit(0)             # closing the window stops the script
     screen.fill((0, 0, 0))
     for index, position in enumerate(_positions):
         r, g, b = frame["colours"][index]
         colour = (r, g, b) if (r or g or b) else OFF_COLOURS[XYZ[index][1]]
         _pygame.draw.circle(screen, colour, position, DOT // 2)
-    for z in range(SIZE):
-        label = "top" if z == SIZE - 1 else "bottom" if z == 0 else ""
-        text = _font.render(f"z = {z} {label}".strip(), True, (150, 150, 150))
-        screen.blit(text, (6, V_OFFSET + (SIZE - 1 - z) * V_SPACING + 4 * V_STAGGER - 18))
+    for surface, position in _labels:
+        screen.blit(surface, position)
     _pygame.display.flip()
+    # On the cube the handshake paces playback; on screen nothing does, so
+    # hold each frame for its own time, less whatever the drawing just cost.
+    remaining = frame["time"] / 1000 - (time.monotonic() - start)
+    if remaining > 0:
+        time.sleep(remaining)
 
 
 # -------------------------------------------------------------------- shows --

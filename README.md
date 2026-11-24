@@ -235,54 +235,76 @@ write_pattern("Patterns/example.bin", [frame])
 ## Watching a pattern as you write it
 
 Editing a generator, saving, then clicking **Generate…** is a slow way to see
-the effect of a one-line change. `cube_live` skips all of it — call `show()`
-from inside the code you are working on and the frame appears immediately:
+the effect of a one-line change. There are two quicker routes.
 
-```python
-import cube_live
-from patterngen import *
+### Watch one generator run
 
-def my_pattern():
-    scene = Scene(50)
-    for z in range(SIZE):
-        scene.paint(layer(z), RED)
-        scene.hold()
-        cube_live.show(scene)        # <- look at it right now
-    return scene.frames
-
-my_pattern()
+```powershell
+python make_sample_patterns.py test_fade_many
 ```
 
-Run that file directly — `python my_pattern.py`, or from your editor's Run
-button, or under a debugger. Every `show()` blocks until the frame is actually
-displayed, so **stepping through the loop in a debugger walks the cube through
-the pattern one frame at a time**, which is the quickest way to find the point
-where a pattern stops doing what you meant.
+That runs just that generator and plays it in a window, looping, at the
+pattern's own speed. Close the window to stop. Edit the function, save, run it
+again — that is the whole loop. Add `--cube` to watch it on the real cube
+instead of on screen. With no argument the file still regenerates every `.bin`
+into `Patterns/` as before.
 
-Frames go to a window by default, which needs no hardware and is instant. To
-watch the real cube instead, say so once at the top:
+### Watch it build, line by line
+
+Call `cube_live.show()` from inside the generator and each frame appears as it
+is made. Taking `test_fade_many` as it stands:
+
+```python
+import cube_live                         # at the top of the file
+
+def test_fade_many(time_ms=100):
+    scene = Scene(time_ms)
+    for z in range(30):
+        column1 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
+        column2 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
+        column3 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
+        scene.fade_many(((column(*column1), RANDOMCOLOUR()),
+                         (column(*column2), RANDOMCOLOUR()),
+                         (column(*column3), RANDOMCOLOUR())), steps=30)
+        cube_live.show(scene)            # <- the cube as it stands after this pass
+    return scene.frames
+```
+
+Run it the same way (`python make_sample_patterns.py test_fade_many`) and you
+see the state after each of the 30 passes, then the finished pattern plays.
+
+`show()` blocks until the frame is actually displayed, so **putting a
+breakpoint on that line and stepping walks the cube through the pattern one
+frame at a time** — which is the quickest way to find where a pattern stops
+doing what you meant. `scene` works directly because `show()` takes a `Scene`
+and uses its working frame; `scene.frames[-1]` or a list of 125 colours work
+too.
+
+To watch on the real cube, once at the top of the file:
 
 ```python
 cube_live.target("cube")     # or "both", to see it in each place at once
 ```
 
+### The rest of cube_live
+
 | Call | What it does |
 |---|---|
-| `show(x)` | Display one frame. `x` may be a frame, a `Scene` (its working frame is used), or a bare list of 125 colours. A list of frames is played in order. |
+| `show(x)` | Display one frame. `x` may be a frame, a `Scene`, or a list of 125 colours. A list of frames plays in order. |
 | `play(frames)` | Play a whole list, each for its own display time. |
 | `off()` | Blank it. |
-| `target(where)` | `"window"`, `"cube"` or `"both"`. |
-| `close()` | Hand the cube back to its own SD playback and release the port. Happens automatically when the script ends. |
+| `target(where)` | `"window"` (default), `"cube"` or `"both"`. |
+| `close()` | Hand the cube back to its SD playback and release the port. Automatic when the script ends. |
 
 Two things to know when the target is the cube. The port is opened once and
 held, because reopening it resets the Arduino and costs two seconds — so keep
-one script running rather than starting a fresh one per change, and note that
-the editor cannot use the port at the same time. And the sketch holds the last
-frame it was sent for 60 seconds before falling back to random SD playback, so
-a single `show()` does not stay up indefinitely.
+one script running across edits, and note the editor cannot use the port at
+the same time. And the sketch holds the last frame it was sent for 60 seconds
+before falling back to random SD playback, so a single `show()` does not stay
+up indefinitely.
 
 If you leave `cube_live.show()` calls in a generator that the editor's
-**Generate…** dialog also runs, they will fire there too and pop up a window.
+**Generate…** dialog also runs, they fire there too and pop up a window.
 Harmless, but worth knowing why it appeared.
 
 ## Checking the SD card
