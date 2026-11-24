@@ -113,3 +113,5 @@ and slow.
   not built.
 - `python make_sample_patterns.py <generator>` now runs just that generator and loops it in the cube_live window (add `--cube` for the real thing); with no argument it still writes every .bin as before. There was previously no way to run a single generator outside the editor, which is what made cube_live hard to use.
 - cube_live window fixes found while testing: layer labels were re-rendered every frame, playback ignored frame times entirely (a pattern raced past), and closing the window did not stop the script. Playback now paces against actual draw cost - measured accurate to a few percent at 10, 25 and 50 ms frames.
+- `Test_sample_pattern.py` finished as an F5 target in VS Code: set `GENERATOR` (plus ON_CUBE / REPEAT / BUILD_ONLY) and run. The version John started called a function that does not exist. Added `.vscode/launch.json` with Watch a pattern / Cube editor / Current file configurations.
+- `make_sample_patterns.py` had no module-level `import cube_live` — the only one was inside the `__main__` block, so John's inline `cube_live.show(scene)` would have raised NameError when called from anywhere else. Added at module level.

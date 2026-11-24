@@ -31,6 +31,7 @@ software works against real hardware.
 | `patterngen.py` | Named regions (`layer`, `column`, `OUTER`…) and `Scene`, for building patterns in code. |
 | `make_sample_patterns.py` | The generators. `GENERATORS` at the bottom drives the editor's **Generate…** dialog. John edits this file constantly. |
 | `cube_live.py` | `show()` a frame straight to a window or the real cube while writing a pattern. |
+| `Test_sample_pattern.py` | F5 target in VS Code: set `GENERATOR` and watch one generator. |
 | `send_serial.py` | The `CUBE` serial protocol. |
 | `test_protocol.py` | Drives `send_serial` against a model of the sketch. No hardware needed. |
 | `sketch/rgb_cube/` | The Nano sketch: FastLED, SD playback, the serial protocol. |

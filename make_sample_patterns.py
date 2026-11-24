@@ -13,6 +13,7 @@ Two ways to build frames, both shown below:
 import random
 from pathlib import Path
 
+import cube_live                 # cube_live.show(x) anywhere below shows x at once
 from cube_layout import SIZE, led_index
 from patterns import new_frame, write_pattern
 from patterngen import (ALL, CENTRE, CORNERS, EDGES, FACES, MIDDLE, OUTER,
@@ -31,6 +32,8 @@ def test_fade_many(time_ms=100):
         column2 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
         column3 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
         scene.fade_many(((column(*column1), RANDOMCOLOUR()), (column(*column2), RANDOMCOLOUR()), (column(*column3), RANDOMCOLOUR())), steps=30)
+        cube_live.show(scene)            # <- the cube as it stands after this pass
+ 
     return scene.frames
 
 

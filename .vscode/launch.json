@@ -1,0 +1,33 @@
+{
+  // F5 runs the first of these. Pick another from the Run and Debug panel.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Watch a pattern",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/Test_sample_pattern.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true
+    },
+    {
+      "name": "Cube editor",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/rgb_cube_editor.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true
+    },
+    {
+      "name": "Current file",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "justMyCode": true
+    }
+  ]
+}

@@ -239,6 +239,17 @@ the effect of a one-line change. There are two quicker routes.
 
 ### Watch one generator run
 
+In VS Code, open **`Test_sample_pattern.py`**, set one line, and press **F5**:
+
+```python
+GENERATOR = "test_fade_many"    # which generator to watch
+ON_CUBE = False                 # True drives the real cube instead of a window
+REPEAT = True                   # keep looping until the window is closed
+BUILD_ONLY = False              # True stops after generating, skipping playback
+```
+
+From a terminal, the same thing without editing anything:
+
 ```powershell
 python make_sample_patterns.py test_fade_many
 ```
