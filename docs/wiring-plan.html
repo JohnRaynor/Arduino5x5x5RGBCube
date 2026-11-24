@@ -93,13 +93,11 @@
       changed.</li>
       <li><b>Pitch is one inch (25.4 mm)</b>, not 20.32 mm — ten hole spacings
       on 0.1″ board, so stripboard still serves as a template. 20.32 mm looked
-      cramped. The cube is about 102 mm on a side, and every "20.32 mm" and
-      "81.3 mm" below should be read as 25.4 mm and 101.6 mm.</li>
+      cramped. The cube is about 102 mm on a side.</li>
       <li><b>No Eurocard base.</b> Heavy rails are needed for the current
       whatever the base is made of, so the stripboard copper earns nothing, and
       Eurocard comes in no convenient size. The cube stands on a <b>plastic
-      box</b> that hides the tie-bar wiring and the Arduino. <i>The base board
-      section and its diagram below are superseded.</i></li>
+      box</b> that hides the tie-bar wiring and the Arduino. The base section below is drawn as built.</li>
       <li><b>A 5 V 2 A supply is ample</b> and runs cool; the 10 A brick was not
       needed. <code>MAX_MILLIAMPS</code> is 1000, not 3000.</li>
       <li><b>The Schottky is confirmed</b> to keep the cube off the USB port.</li>
@@ -111,8 +109,8 @@
     <p>Revision 1 assumed APA106 parts with legs long enough to reach from one layer to the next. Neither held.</p>
     <ul>
       <li><b>Pinout.</b> The LEDs are WS2812-family, pin order <b>DIN · GND · VDD · DOUT</b>. That is the middle two pins swapped from the APA106 order the first revision was drawn for. Getting this wrong destroys the LED instantly.</li>
-      <li><b>Leg lengths.</b> GND 16.5 mm, VDD 15 mm, DIN and DOUT 14 mm each — too short to span the 20.32 mm layer pitch. The vertical columns are now <b>pillars of 0.9 mm tinned copper wire</b> that each LED's VDD leg solders onto, rather than legs soldered to legs.</li>
-      <li><b>Pitch.</b> 20.32 mm, which is 8 holes of 0.1″ stripboard, matching the existing 4×4×4 and letting the cube stand on a stripboard base.</li>
+      <li><b>Leg lengths.</b> GND 16.5 mm, VDD 15 mm, DIN and DOUT 14 mm each — too short to span the layer pitch. The vertical columns are now <b>pillars of 0.9 mm tinned copper wire</b> that each LED's VDD leg solders onto, rather than legs soldered to legs.</li>
+      <li><b>Pitch.</b> This revision proposed 20.32 mm. The build used one inch — see above.</li>
       <li><b>Layers.</b> This revision argued for five identical, unrotated layers. The build went the other way — see the as-built panel above.</li>
       <li><b>Sketch settings.</b> <code>WS2812B</code> and <code>GRB</code>, not <code>APA106</code> and <code>RGB</code>.</li>
     </ul>
@@ -183,7 +181,7 @@
     <tr><th>Reason</th><th>Consequence</th></tr>
     <tr><td><b>The data return path</b></td><td>Data hops sideways between neighbours within a row. With GND running as a rail alongside each row, the signal and its return are a close pair. Put GND on the verticals instead and every 20 mm data hop returns down a pillar, across the base and back up — a loop a hundred times larger.</td></tr>
     <tr><td><b>Leg lengths</b></td><td>GND is the longest leg at 16.5 mm, so it is the one to spend on a horizontal reach. A vertical leg only has to touch a pillar that runs past it, which takes a few millimetres whatever its length.</td></tr>
-    <tr><td><b>Where the heavy copper goes</b></td><td>25 pillars land on the base board, where VDD can be distributed through reinforced stripboard and thick wire. GND gets back to the base through four corner risers, which is ample for the current involved.</td></tr>
+    <tr><td><b>Where the heavy copper goes</b></td><td>25 pillars land on the lid, where VDD is distributed through heavy wire inside the box. GND gets back there through four corner risers, which is ample for the current involved.</td></tr>
   </table>
 
   <h2>One layer</h2>
@@ -191,7 +189,7 @@
   <p>Every layer is built on the same jig, with alternate layers turned 180° (see above). Data snakes along the rows, so <b>alternate rows are turned 180°</b> — that is what lets each DOUT reach the DIN beside it with the LEDs' own legs. Turning a row does not disturb the supply legs, because they leave at right angles to the pin row: GND still reaches the rail behind, VDD still reaches the pillar in front.</p>
 
   <figure>
-    <svg viewBox="0 0 760 545" role="img" aria-label="Plan view of one layer: 25 LEDs in a five by five grid at 20.32 millimetre pitch. The data path snakes along each row, reversing direction every row, entering at the front-left LED and leaving at the back-right. A vertical pillar stands 6 millimetres in front of each LED, and a ground rail runs along the back of each row, the five rails tied together at the left and right edges.">
+    <svg viewBox="0 0 760 545" role="img" aria-label="Plan view of one layer: 25 LEDs in a five by five grid at one inch pitch. The data path snakes along each row, reversing direction every row, entering at the front-left LED and leaving at the back-right. A vertical pillar stands 6 millimetres in front of each LED, and a ground rail runs along the back of each row, the five rails tied together at the left and right edges.">
       <g font-size="12" fill="var(--muted)">
         <text x="20" y="104">row 0 →</text>
         <text x="20" y="194">row 1 ←</text>
@@ -244,7 +242,7 @@
       </g>
     </svg>
     <p class="key"><span class="v5">VDD pillar (vertical, through all layers)</span><span class="gnd">GND rail and tie bar</span><span class="dat">data</span></p>
-    <figcaption><b>Layer plan.</b> LED pitch 20.32 mm — eight holes of 0.1″ stripboard. The chain enters at the front-left LED and leaves at the back-right one, so each layer's exit is diagonally opposite its entry; because alternate layers are rotated, that exit sits directly below the next layer's entry, so the link between layers is a short vertical hop. The five GND rails are tied at both the left and the right edge, which halves their impedance and stiffens the layer for handling.</figcaption>
+    <figcaption><b>Layer plan.</b> LED pitch one inch (25.4 mm) — ten hole spacings on 0.1″ board, so stripboard makes a convenient template. The chain enters at the front-left LED and leaves at the back-right one, so each layer's exit is diagonally opposite its entry; because alternate layers are rotated, that exit sits directly below the next layer's entry, so the link between layers is a short vertical hop. The five GND rails are tied at both the left and the right edge, which halves their impedance and stiffens the layer for handling.</figcaption>
   </figure>
 
   <h2>The stack</h2>
@@ -252,10 +250,10 @@
   <p>The pillars are what make this a cube rather than five loose layers. Each is one continuous piece of 0.9 mm tinned copper wire running from the base board to the top layer, with five VDD legs soldered to it along the way. Build the layers flat, then thread them down the pillars like beads.</p>
 
   <figure>
-    <svg viewBox="0 0 760 440" role="img" aria-label="Front elevation of the stack: five layers 20.32 millimetres apart on continuous vertical VDD pillars that land on a stripboard base, with a ground rail at each layer, ground risers at the left and right edges, and the supply entering at the base.">
+    <svg viewBox="0 0 760 440" role="img" aria-label="Front elevation of the stack: five layers one inch apart on continuous vertical VDD pillars that land on the lid of the box below, with a ground rail at each layer, ground risers at the left and right edges, and the supply entering at the base.">
       <!-- base board -->
       <rect x="100" y="378" width="540" height="24" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
-      <text x="370" y="395" text-anchor="middle" font-size="12" fill="var(--muted)">STRIPBOARD BASE</text>
+      <text x="370" y="395" text-anchor="middle" font-size="12" fill="var(--muted)">BOX LID</text>
       <!-- pillars -->
       <g stroke="var(--v5)" stroke-width="3">
         <line x1="170" y1="378" x2="170" y2="44"/><line x1="270" y1="378" x2="270" y2="44"/>
@@ -288,8 +286,8 @@
         <line x1="694" y1="270" x2="706" y2="270"/><line x1="694" y1="340" x2="706" y2="340"/>
       </g>
       <g font-size="12" fill="var(--muted)">
-        <text x="662" y="36" text-anchor="middle">81.3 mm</text>
-        <text x="714" y="308">20.32 mm</text>
+        <text x="662" y="36" text-anchor="middle">101.6 mm</text>
+        <text x="714" y="308">25.4 mm</text>
         <text x="60" y="56">layer 4</text><text x="60" y="126">layer 3</text><text x="60" y="196">layer 2</text>
         <text x="60" y="266">layer 1</text><text x="60" y="336">layer 0</text>
       </g>
@@ -312,69 +310,83 @@
     <figcaption><b>Front elevation.</b> Seen from the front, the five GND rails of each layer line up behind one another and appear as a single line. Each pillar carries one column — five LEDs, 300 mA at the absolute worst — and each riser carries about a quarter of the whole cube. The data chain is omitted here; it lives inside each layer, with one jumper per layer boundary routed up the back-left corner alongside a riser, which keeps its return path tight.</figcaption>
   </figure>
 
-  <h2>The base board and where power goes in</h2>
+  <h2>The base and where power goes in</h2>
 
-  <p class="meta"><b>Superseded:</b> the cube was built on a plastic box, not a stripboard base. Kept because the power-feed reasoning below still applies to whatever the rails are mounted on.</p>
+  <p>The cube stands on the lid of a <b>plastic box</b>, with the 25 pillars
+  passing through it. Everything else lives inside: the rails that tie the
+  pillars together, the GND ring, the Nano, the SD module, the capacitor and
+  the socket. Nothing shows from outside but the cube and a lead.</p>
 
-  <p>Use a <b>100 × 160 mm Eurocard stripboard</b>, not a 100 mm square. The layer footprint is about 93 × 87 mm once the pillars in front and the rails and tie bars behind are counted, which leaves nothing usable on a square board. On a Eurocard the cube takes one end and the Nano, SD module, socket and capacitor live in the 67 × 100 mm left over.</p>
+  <p>A stripboard base was the earlier plan and was dropped. Heavy wire has to
+  be added for the current whatever the base is made of — a 35 µm copper strip
+  is good for about 2 A and would run warm at the 1.5 A a row of five pillars
+  can draw — so the stripboard copper carries nothing in the end, and Eurocard
+  comes in no size that suits a 102 mm cube.</p>
 
   <figure>
-    <svg viewBox="0 0 760 480" role="img" aria-label="Plan of the stripboard base: the cube footprint occupies the left two thirds, with five reinforced copper strips carrying 5 volts to a five by five grid of pillar holes and joined at both ends by a heavy spine, a ground ring of wire around the footprint with risers at its four corners, and the Nano, SD module, capacitor and DC socket in the free area to the right.">
-      <rect x="40" y="40" width="680" height="400" rx="3" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
-      <!-- gnd ring -->
-      <rect x="56" y="56" width="400" height="368" fill="none" stroke="currentColor" stroke-width="4"/>
-      <!-- vdd strips -->
-      <g stroke="var(--v5)" stroke-width="5">
-        <line x1="88" y1="96" x2="424" y2="96"/><line x1="88" y1="164" x2="424" y2="164"/>
-        <line x1="88" y1="232" x2="424" y2="232"/><line x1="88" y1="300" x2="424" y2="300"/>
-        <line x1="88" y1="368" x2="424" y2="368"/>
-        <line x1="88" y1="96" x2="88" y2="368" stroke-width="6"/>
-        <line x1="424" y1="96" x2="424" y2="368" stroke-width="6"/>
+    <svg viewBox="0 0 760 470" role="img" aria-label="Two views of the base. Left, the box lid from above: a five by five grid of holes at one inch pitch where the pillars pass through, joined underneath by five rails that meet a spine at each end, with a ground ring running round the outside and risers at its four corners. Right, a section through the box: the pillars carry the cube above the lid, and the Nano, SD module and capacitor sit inside with the socket on the end wall.">
+      <text x="220" y="36" text-anchor="middle" font-size="12" fill="var(--muted)">BOX LID FROM ABOVE · wiring below it shown through</text>
+      <rect x="40" y="56" width="360" height="368" rx="6" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
+      <rect x="68" y="88" width="304" height="304" fill="none" stroke="currentColor" stroke-width="4"/>
+      <g stroke="var(--v5)" stroke-width="4"><line x1="78" y1="110" x2="362" y2="110"/><line x1="78" y1="175" x2="362" y2="175"/><line x1="78" y1="240" x2="362" y2="240"/><line x1="78" y1="305" x2="362" y2="305"/><line x1="78" y1="370" x2="362" y2="370"/>
+        <line x1="78" y1="110" x2="78" y2="370" stroke-width="5"/>
+        <line x1="362" y1="110" x2="362" y2="370" stroke-width="5"/>
       </g>
-      <!-- pillar holes -->
-      <g fill="var(--paper)" stroke="var(--v5)" stroke-width="2">
-        <circle cx="88" cy="96" r="5"/><circle cx="172" cy="96" r="5"/><circle cx="256" cy="96" r="5"/><circle cx="340" cy="96" r="5"/><circle cx="424" cy="96" r="5"/>
-        <circle cx="88" cy="164" r="5"/><circle cx="172" cy="164" r="5"/><circle cx="256" cy="164" r="5"/><circle cx="340" cy="164" r="5"/><circle cx="424" cy="164" r="5"/>
-        <circle cx="88" cy="232" r="5"/><circle cx="172" cy="232" r="5"/><circle cx="256" cy="232" r="5"/><circle cx="340" cy="232" r="5"/><circle cx="424" cy="232" r="5"/>
-        <circle cx="88" cy="300" r="5"/><circle cx="172" cy="300" r="5"/><circle cx="256" cy="300" r="5"/><circle cx="340" cy="300" r="5"/><circle cx="424" cy="300" r="5"/>
-        <circle cx="88" cy="368" r="5"/><circle cx="172" cy="368" r="5"/><circle cx="256" cy="368" r="5"/><circle cx="340" cy="368" r="5"/><circle cx="424" cy="368" r="5"/>
-      </g>
-      <!-- gnd riser points -->
+      <circle cx="90" cy="110" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="155" cy="110" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="220" cy="110" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="285" cy="110" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="350" cy="110" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="90" cy="175" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="155" cy="175" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="220" cy="175" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="285" cy="175" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="350" cy="175" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="90" cy="240" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="155" cy="240" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="220" cy="240" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="285" cy="240" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="350" cy="240" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="90" cy="305" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="155" cy="305" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="220" cy="305" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="285" cy="305" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="350" cy="305" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="90" cy="370" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="155" cy="370" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="220" cy="370" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="285" cy="370" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="350" cy="370" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/>
       <g fill="currentColor">
-        <circle cx="56" cy="56" r="7"/><circle cx="456" cy="56" r="7"/>
-        <circle cx="56" cy="424" r="7"/><circle cx="456" cy="424" r="7"/>
+        <circle cx="68" cy="88" r="6"/><circle cx="372" cy="88" r="6"/>
+        <circle cx="68" cy="392" r="6"/><circle cx="372" cy="392" r="6"/>
       </g>
-      <!-- electronics -->
+      <g stroke="var(--muted)" stroke-width="1.2" fill="none">
+        <line x1="90" y1="444" x2="350" y2="444"/>
+        <line x1="90" y1="438" x2="90" y2="450"/><line x1="350" y1="438" x2="350" y2="450"/>
+      </g>
+      <text x="220" y="462" text-anchor="middle" font-size="12" fill="var(--muted)">101.6 mm · 4 × one inch</text>
+
+      <text x="600" y="36" text-anchor="middle" font-size="12" fill="var(--muted)">SECTION THROUGH THE BOX</text>
       <g fill="var(--led)" stroke="currentColor" stroke-width="2">
-        <rect x="516" y="88" width="96" height="150" rx="3"/>
-        <rect x="628" y="88" width="68" height="104" rx="3"/>
+        <circle cx="510" cy="70" r="9"/><circle cx="590" cy="70" r="9"/><circle cx="670" cy="70" r="9"/>
+        <circle cx="510" cy="118" r="9"/><circle cx="590" cy="118" r="9"/><circle cx="670" cy="118" r="9"/>
+        <circle cx="510" cy="166" r="9"/><circle cx="590" cy="166" r="9"/><circle cx="670" cy="166" r="9"/>
+        <circle cx="510" cy="214" r="9"/><circle cx="590" cy="214" r="9"/><circle cx="670" cy="214" r="9"/>
+        <circle cx="510" cy="262" r="9"/><circle cx="590" cy="262" r="9"/><circle cx="670" cy="262" r="9"/>
       </g>
-      <g font-size="12" fill="currentColor" text-anchor="middle">
-        <text x="564" y="168">NANO</text>
-        <text x="662" y="144">SD</text>
+      <g stroke="var(--v5)" stroke-width="3">
+        <line x1="510" y1="56" x2="510" y2="330"/><line x1="590" y1="56" x2="590" y2="330"/><line x1="670" y1="56" x2="670" y2="330"/>
       </g>
-      <!-- socket, cap, diode -->
-      <rect x="640" y="330" width="56" height="46" rx="3" fill="var(--led)" stroke="currentColor" stroke-width="2"/>
-      <text x="668" y="358" font-size="11" fill="currentColor" text-anchor="middle">DC IN</text>
-      <circle cx="560" cy="352" r="18" fill="var(--led)" stroke="currentColor" stroke-width="2"/>
-      <text x="560" y="357" font-size="10" fill="currentColor" text-anchor="middle">1000µ</text>
-      <!-- feed wires -->
-      <g fill="none" stroke-width="5">
-        <polyline points="640,340 560,340 560,334" stroke="var(--v5)"/>
-        <polyline points="560,370 560,396 456,396 456,424" stroke="currentColor"/>
-        <polyline points="560,334 560,300 486,300 486,232 456,232" stroke="var(--v5)"/>
+      <g stroke="currentColor" stroke-width="3">
+        <line x1="470" y1="76" x2="710" y2="76"/><line x1="470" y1="124" x2="710" y2="124"/>
+        <line x1="470" y1="172" x2="710" y2="172"/><line x1="470" y1="220" x2="710" y2="220"/>
+        <line x1="470" y1="268" x2="710" y2="268"/>
       </g>
-      <!-- data -->
-      <polyline points="516,120 486,120 486,70 300,70 300,88" fill="none" stroke="var(--data)" stroke-width="3"/>
-      <text x="392" y="62" font-size="11" fill="var(--data)" text-anchor="middle">D6 → 330 Ω → DIN of LED (0,0)</text>
-      <g font-size="12" fill="var(--muted)">
-        <text x="256" y="462" text-anchor="middle">cube footprint · about 93 × 87 mm</text>
-        <text x="606" y="462" text-anchor="middle">67 × 100 mm free</text>
-        <text x="256" y="34" text-anchor="middle">5 VDD strips, each reinforced with 0.9 mm wire</text>
+      <line x1="452" y1="300" x2="728" y2="300" stroke="currentColor" stroke-width="3"/>
+      <path d="M452 300 L452 420 L728 420 L728 300" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
+      <line x1="470" y1="330" x2="710" y2="330" stroke="var(--v5)" stroke-width="4"/>
+      <line x1="470" y1="344" x2="710" y2="344" stroke="currentColor" stroke-width="4"/>
+      <g fill="var(--led)" stroke="currentColor" stroke-width="2">
+        <rect x="474" y="364" width="90" height="40" rx="3"/>
+        <rect x="580" y="364" width="60" height="32" rx="3"/>
+      </g>
+      <circle cx="676" cy="382" r="16" fill="var(--led)" stroke="currentColor" stroke-width="2"/>
+      <rect x="728" y="372" width="18" height="24" fill="var(--led)" stroke="currentColor" stroke-width="2"/>
+      <g font-size="11" fill="currentColor">
+        <text x="519" y="388" text-anchor="middle">NANO</text>
+        <text x="610" y="384" text-anchor="middle">SD</text>
+        <text x="676" y="386" text-anchor="middle">1000µ</text>
+        <text x="716" y="364" text-anchor="end" fill="var(--muted)">DC in</text>
+        <text x="716" y="324" text-anchor="end" fill="var(--v5)">+5 V rail</text>
+        <text x="716" y="358" text-anchor="end" fill="currentColor">GND rail</text>
+        <text x="446" y="296" text-anchor="end" fill="var(--muted)">lid</text>
       </g>
     </svg>
-    <p class="key"><span class="v5">+5 V: strips, spines and feed</span><span class="gnd">GND ring and risers</span><span class="dat">data</span></p>
-    <figcaption><b>Base board.</b> Each stripboard strip carries five pillars, so 25 LEDs and up to 1.5 A — more than bare 35 µm copper should be asked for, which is why every strip gets a length of 0.9 mm tinned wire soldered along it. The five strips are joined at <i>both</i> ends so each is fed from two directions. GND is a ring of the same wire around the footprint, picking up the four risers. Cut the strips between the cube area and the free area so the GND ring and the Nano's rails stay separate from the VDD ladder.</figcaption>
+    <p class="key"><span class="v5">+5 V: pillars, rails and spines</span><span class="gnd">GND ring, risers and layer rails</span></p>
+    <figcaption><b>The base, as built.</b> Each rail ties the five pillars of one
+    row, so up to 25 LEDs and 1.5 A, and meets a spine at both ends so it is fed
+    from two directions. All of it is 0.9 mm tinned copper, which is 2.2 mΩ per
+    100 mm — the drop across the longest run in the cube is under 3 mV, so no
+    power needs injecting at the top. GND is a ring of the same wire picking up
+    the four corner risers that carry each layer's rails down. The socket is on
+    the end wall; the lead is the only thing that shows.</figcaption>
   </figure>
 
   <h3>Where to feed the supply</h3>
@@ -383,11 +395,11 @@
 
   <ul>
     <li><b>Socket to capacitor:</b> 1.5 mm² wire, as short as the layout allows.</li>
-    <li><b>Capacitor to the VDD ladder:</b> join at the <i>middle</i> strip, so current reaches the outer strips two at a time rather than travelling the length of the ladder.</li>
+    <li><b>Capacitor to the VDD ladder:</b> join at the <i>middle</i> rail, so current reaches the outer rails two at a time rather than travelling the length of the ladder.</li>
     <li><b>Capacitor to the GND ring:</b> one connection, near the same point.</li>
     <li><b>The Nano's GND:</b> to the GND ring <i>close to where the data wire leaves for LED (0,0)</i>. The data signal returns through that connection; a short one keeps the loop small.</li>
-    <li><b>The Nano's 5 V:</b> through the 1N5819 from the ladder, so the board runs on either USB or the brick without the two supplies meeting.</li>
-    <li><b>Decoupling:</b> two or three 100 nF ceramics on the base board, one from each of the outer and middle VDD strips to the GND ring. See below for why none go inside the cube.</li>
+    <li><b>The Nano's 5 V:</b> through the 1N5819 from the ladder, so the board runs on either USB or the supply without the two meeting. Confirmed on the finished cube: with the supply off and USB in, the cube stays completely dark.</li>
+    <li><b>Decoupling:</b> two or three 100 nF ceramics inside the box, one from each of the outer and middle VDD rails to the GND ring. See below for why none go inside the cube.</li>
   </ul>
 
   <h3>Why no decoupling inside the cube</h3>
@@ -399,7 +411,7 @@
   <p>So: keep the cube volume clear, and if hard black-to-white transitions ever sparkle, retrofit at the far corners of the top layer first — electrically the worst spot, and where the tie bar and riser already meet, so a cap tucked in there barely shows.</p>
 
   <div class="note">
-    <p><b>No top-end injection needed.</b> 0.9 mm copper is 2.2 mΩ per 100 mm. The worst-loaded conductor in the whole cube — a layer tie bar carrying 1.5 A over 81 mm — drops under 3 mV, and a pillar drops a fraction of a millivolt. The voltage drop people warn about in LED cubes is a problem of thin PCB traces and long thin leads, neither of which this design has. The two places that <i>do</i> matter are the stripboard strips, fixed by the reinforcing wire, and the DC connector.</p>
+    <p><b>No top-end injection needed.</b> 0.9 mm copper is 2.2 mΩ per 100 mm. The worst-loaded conductor in the whole cube — a layer tie bar carrying 1.5 A over about 100 mm — drops under 3 mV, and a pillar drops a fraction of a millivolt. The voltage drop people warn about in LED cubes is a problem of thin PCB traces and long thin leads, neither of which this design has. The one place that <i>does</i> matter is the DC connector.</p>
   </div>
 
   <h2>Current and the connector</h2>
@@ -417,7 +429,7 @@ FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS);</code></pre>
     <tr><td>One GND rail (one row of 5)</td><td class="n">300 mA</td><td>as above</td></tr>
     <tr><td>One layer tie bar</td><td class="n">1.5 A</td><td>under 3 mV over its length</td></tr>
     <tr><td>One GND riser</td><td class="n">1.25 A</td><td>comfortable</td></tr>
-    <tr><td>One stripboard VDD strip</td><td class="n">1.5 A</td><td><b>reinforce with wire</b> — bare 35 µm copper is good for about 2 A and would run warm</td></tr>
+    <tr><td>One VDD rail (one row of five pillars)</td><td class="n">1.5 A</td><td>0.9 mm wire, and fed from both ends — comfortable. A 35 µm copper strip would have run warm here, which is why the base is wire</td></tr>
     <tr><td>DC chassis socket</td><td class="n">3 A</td><td>within rating because of the software cap; the weak point is the socket's centre contact, not the cable</td></tr>
   </table>
 
@@ -501,16 +513,16 @@ FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS);</code></pre>
   <table>
     <tr><th class="n">Qty</th><th>Item</th><th>Source and notes</th></tr>
     <tr><td class="n">125 + spares</td><td>5 mm WS2812-family addressable LED, diffused</td><td>Pin order DIN · GND · VDD · DOUT. Buy 10 % over — soldering kills a few, and a dead one mid-chain is a rework job.</td></tr>
-    <tr><td class="n">1 reel</td><td>0.9 mm bare tinned copper wire, 20 SWG</td><td>Rapid <b>05-0310</b>, 500 g reel, about £17. Pillars, rails, tie bars, risers and strip reinforcement come to roughly 10 m, so one reel is a lifetime supply. Avoid anything sold for jewellery — it is usually enamelled or plated.</td></tr>
-    <tr><td class="n">1</td><td>100 × 160 mm stripboard (Eurocard)</td><td>0.1″ pitch, which sets the 20.32 mm LED spacing at 8 holes.</td></tr>
+    <tr><td class="n">1 reel</td><td>0.9 mm bare tinned copper wire, 20 SWG</td><td>Rapid <b>05-0310</b>, 500 g reel, about £17. Pillars, rails, tie bars and risers come to roughly 10 m, so one reel is a lifetime supply. Avoid anything sold for jewellery — it is usually enamelled or plated.</td></tr>
+    <tr><td class="n">1</td><td>Plastic box, lid drilled 5 × 5 at one inch</td><td>Hides the tie-bar wiring and the Arduino. A strip of 0.1″ board marks the hole centres.</td></tr>
     <tr><td class="n">5</td><td>1N5819 Schottky diode, 1 A 40 V, DO-41</td><td>Rapid <b>47-2566</b>, 8 p each in fives. Only one is needed; they are sold in multiples.</td></tr>
     <tr><td class="n">5</td><td>DC chassis socket, 5.5 × 2.5 mm</td><td>Rapid <b>20-0989</b> (RVFM DC-022 2.5), 88 p each in fives. <b>2.5 mm, not 2.1</b> — the COOLM brick has a 2.5 mm plug and it will be loose in a 2.1 mm socket.</td></tr>
-    <tr><td class="n">1</td><td>5 V 10 A PSU</td><td>Already bought. Software cap keeps the draw to 3 A.</td></tr>
+    <tr><td class="n">1</td><td>5 V 2 A PSU</td><td>Ample in practice, and runs cool. Software cap holds the draw to 1 A.</td></tr>
     <tr><td class="n">1</td><td>470–1000 µF electrolytic, 10 V or 16 V</td><td>At the supply entry on the base board. The value is not critical; more is better for transients, less is kinder to the DC socket on plug-in. Low-ESR or a 105 °C part if there is a choice.</td></tr>
     <tr><td class="n">5</td><td>100 nF ceramic</td><td>Two or three on the base board; the rest are spares in case any are ever retrofitted inside the cube.</td></tr>
     <tr><td class="n">1</td><td>330 Ω resistor</td><td>In series with D6. The sacrificial part — keep it.</td></tr>
     <tr><td class="n">1</td><td>100 Ω resistor</td><td>Not in the finished cube. Put it in series with the 5 V feed for the <i>first</i> power-up of anything newly soldered.</td></tr>
-    <tr><td class="n">1</td><td>Jig: 120 × 120 mm board drilled 5 × 5 at 20.32 mm, 5 mm holes</td><td>Lay it out from a piece of the stripboard so the jig and the base agree. 20.00 mm would be 1.3 mm out by the fifth column.</td></tr>
+    <tr><td class="n">1</td><td>Jig: board drilled 5 × 5 at one inch, 5 mm holes</td><td>Ten hole spacings on a piece of 0.1″ board sets it out exactly.</td></tr>
   </table>
   </div>
 
@@ -524,7 +536,7 @@ FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS);</code></pre>
     <li><div><b>Test the layer</b> before building the next. Feed it from the Nano with the 100 Ω in place and run <code>chain_test</code>: one LED at a time, in chain order. If the order is wrong you will see exactly where. Repeat for all five layers.</div></li>
     <li><div><b>Prepare the base board.</b> Cut the strips between the cube area and the free area, solder 0.9 mm wire along each of the five VDD strips, add the spines at both ends and the GND ring. Fit the socket, capacitor, diode and Nano.</div></li>
     <li><div><b>Stand the 25 pillars</b> in the base board and solder them to the strips. Check they are vertical and parallel in both axes before going further — everything stacks on them.</div></li>
-    <li><div><b>Thread the layers on</b> from the top down, spacing them 20.32 mm with offcuts of stripboard as gauges. Solder each layer's VDD legs to the pillars, then its tie bars to the corner risers. Test after every layer.</div></li>
+    <li><div><b>Thread the layers on</b> from the top down, spacing them one inch with a strip of 0.1″ board as a gauge. Solder each layer's VDD legs to the pillars, then its tie bars to the corner risers. Test after every layer.</div></li>
     <li><div><b>Route the four data jumpers</b> between layers, up the back-left corner alongside a GND riser.</div></li>
     <li><div><b>First full power-up</b> with the 100 Ω still in the supply line, then remove it and raise <code>MAX_MILLIAMPS</code> to taste.</div></li>
   </ol>

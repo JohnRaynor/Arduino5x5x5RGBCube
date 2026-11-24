@@ -122,3 +122,4 @@ written. Kept for the record of what the build looked like from the inside.
 Patterns rather than hardware. `Test_sample_pattern.py` is the F5 target for
 watching one generator; `cube_live.show()` inside a generator shows the cube
 as it is built, and a breakpoint on that line steps frame by frame.
+- Wiring plan redrawn as built: the base figure now shows the plastic box (lid from above with the one-inch pillar grid and the rails and GND ring below it, plus a section through the box with the Nano, SD, capacitor and wall socket inside), and every diagram label carries the real dimensions - 25.4 mm pitch, 101.6 mm side - instead of asking the reader to substitute them. Stripboard language removed from the power-feed list, the current table and the parts list; the places it still appears are explaining why that base was rejected.
