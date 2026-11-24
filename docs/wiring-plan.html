@@ -312,10 +312,12 @@
 
   <h2>The base and where power goes in</h2>
 
-  <p>The cube stands on the lid of a <b>plastic box</b>, with the 25 pillars
-  passing through it. Everything else lives inside: the rails that tie the
-  pillars together, the GND ring, the Nano, the SD module, the capacitor and
-  the socket. Nothing shows from outside but the cube and a lead.</p>
+  <p>The cube stands on the lid of a <b>220 &#215; 150 mm plastic box</b>, with the
+  25 pillars passing through it. Everything else lives inside: the rails that
+  tie the pillars together, the GND ring, the Nano, the SD module and the
+  capacitor. The end wall gives access to the USB lead, the SD card and the
+  power terminal block; a socket on the side wall is wired in parallel with
+  that block, so either can feed the cube.</p>
 
   <p>A stripboard base was the earlier plan and was dropped. Heavy wire has to
   be added for the current whatever the base is made of — a 35 µm copper strip
@@ -324,69 +326,97 @@
   comes in no size that suits a 102 mm cube.</p>
 
   <figure>
-    <svg viewBox="0 0 760 470" role="img" aria-label="Two views of the base. Left, the box lid from above: a five by five grid of holes at one inch pitch where the pillars pass through, joined underneath by five rails that meet a spine at each end, with a ground ring running round the outside and risers at its four corners. Right, a section through the box: the pillars carry the cube above the lid, and the Nano, SD module and capacitor sit inside with the socket on the end wall.">
-      <text x="220" y="36" text-anchor="middle" font-size="12" fill="var(--muted)">BOX LID FROM ABOVE · wiring below it shown through</text>
-      <rect x="40" y="56" width="360" height="368" rx="6" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
-      <rect x="68" y="88" width="304" height="304" fill="none" stroke="currentColor" stroke-width="4"/>
-      <g stroke="var(--v5)" stroke-width="4"><line x1="78" y1="110" x2="362" y2="110"/><line x1="78" y1="175" x2="362" y2="175"/><line x1="78" y1="240" x2="362" y2="240"/><line x1="78" y1="305" x2="362" y2="305"/><line x1="78" y1="370" x2="362" y2="370"/>
-        <line x1="78" y1="110" x2="78" y2="370" stroke-width="5"/>
-        <line x1="362" y1="110" x2="362" y2="370" stroke-width="5"/>
-      </g>
-      <circle cx="90" cy="110" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="155" cy="110" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="220" cy="110" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="285" cy="110" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="350" cy="110" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="90" cy="175" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="155" cy="175" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="220" cy="175" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="285" cy="175" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="350" cy="175" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="90" cy="240" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="155" cy="240" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="220" cy="240" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="285" cy="240" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="350" cy="240" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="90" cy="305" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="155" cy="305" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="220" cy="305" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="285" cy="305" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="350" cy="305" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="90" cy="370" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="155" cy="370" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="220" cy="370" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="285" cy="370" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="350" cy="370" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/>
-      <g fill="currentColor">
-        <circle cx="68" cy="88" r="6"/><circle cx="372" cy="88" r="6"/>
-        <circle cx="68" cy="392" r="6"/><circle cx="372" cy="392" r="6"/>
-      </g>
-      <g stroke="var(--muted)" stroke-width="1.2" fill="none">
-        <line x1="90" y1="444" x2="350" y2="444"/>
-        <line x1="90" y1="438" x2="90" y2="450"/><line x1="350" y1="438" x2="350" y2="450"/>
-      </g>
-      <text x="220" y="462" text-anchor="middle" font-size="12" fill="var(--muted)">101.6 mm · 4 × one inch</text>
+    <svg viewBox="0 0 760 620" role="img" aria-label="The base, as built. Above, the 220 by 150 millimetre box lid from above: a five by five grid of holes at one inch pitch towards the left where the pillars pass through, joined below the lid by five rails meeting a spine at each end, with a ground ring round the outside and risers at its four corners; the Nano, SD module, terminal block and capacitor sit inside towards the right end, with access through the end wall for the USB lead, the SD card and the terminal block, and a power socket on the side wall wired in parallel with it. Below, a section through the box showing the pillars rising from the lid to the cube and everything else enclosed.">
+      <text x="302" y="32" text-anchor="middle" font-size="12" fill="var(--muted)">BOX LID FROM ABOVE &#183; 220 &#215; 150 mm &#183; wiring below the lid shown through</text>
+      <rect x="60" y="50" width="484" height="330" rx="8" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
 
-      <text x="600" y="36" text-anchor="middle" font-size="12" fill="var(--muted)">SECTION THROUGH THE BOX</text>
+      <rect x="84" y="91" width="256" height="256" fill="none" stroke="currentColor" stroke-width="4"/>
+      <g stroke="var(--v5)" stroke-width="4"><line x1="92" y1="107" x2="332" y2="107"/><line x1="92" y1="163" x2="332" y2="163"/><line x1="92" y1="219" x2="332" y2="219"/><line x1="92" y1="275" x2="332" y2="275"/><line x1="92" y1="331" x2="332" y2="331"/>
+        <line x1="92" y1="107" x2="92" y2="331" stroke-width="5"/>
+        <line x1="332" y1="107" x2="332" y2="331" stroke-width="5"/>
+      </g>
+      <circle cx="100" cy="107" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="156" cy="107" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="212" cy="107" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="268" cy="107" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="324" cy="107" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="100" cy="163" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="156" cy="163" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="212" cy="163" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="268" cy="163" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="324" cy="163" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="100" cy="219" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="156" cy="219" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="212" cy="219" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="268" cy="219" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="324" cy="219" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="100" cy="275" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="156" cy="275" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="212" cy="275" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="268" cy="275" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="324" cy="275" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="100" cy="331" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="156" cy="331" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="212" cy="331" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="268" cy="331" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/><circle cx="324" cy="331" r="5" fill="var(--paper)" stroke="var(--v5)" stroke-width="2"/>
+      <g fill="currentColor">
+        <circle cx="84" cy="91" r="6"/><circle cx="340" cy="91" r="6"/>
+        <circle cx="84" cy="347" r="6"/><circle cx="340" cy="347" r="6"/>
+      </g>
+
+      <g fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="5 4">
+        <rect x="372" y="112" width="104" height="46" rx="3"/>
+        <rect x="372" y="186" width="74" height="38" rx="3"/>
+        <rect x="486" y="112" width="46" height="34" rx="3"/>
+        <circle cx="492" cy="208" r="17"/>
+      </g>
+      <g font-size="11" fill="var(--muted)" text-anchor="middle">
+        <text x="424" y="140">NANO</text>
+        <text x="409" y="210">SD</text>
+        <text x="509" y="134">TERM</text>
+        <text x="492" y="212">1000&#181;</text>
+        <text x="455" y="258">inside the box</text>
+      </g>
+
       <g fill="var(--led)" stroke="currentColor" stroke-width="2">
-        <circle cx="510" cy="70" r="9"/><circle cx="590" cy="70" r="9"/><circle cx="670" cy="70" r="9"/>
-        <circle cx="510" cy="118" r="9"/><circle cx="590" cy="118" r="9"/><circle cx="670" cy="118" r="9"/>
-        <circle cx="510" cy="166" r="9"/><circle cx="590" cy="166" r="9"/><circle cx="670" cy="166" r="9"/>
-        <circle cx="510" cy="214" r="9"/><circle cx="590" cy="214" r="9"/><circle cx="670" cy="214" r="9"/>
-        <circle cx="510" cy="262" r="9"/><circle cx="590" cy="262" r="9"/><circle cx="670" cy="262" r="9"/>
+        <rect x="544" y="118" width="14" height="24"/>
+        <rect x="544" y="186" width="14" height="24"/>
+        <rect x="544" y="252" width="14" height="24"/>
+        <rect x="430" y="380" width="30" height="14"/>
       </g>
-      <g stroke="var(--v5)" stroke-width="3">
-        <line x1="510" y1="56" x2="510" y2="330"/><line x1="590" y1="56" x2="590" y2="330"/><line x1="670" y1="56" x2="670" y2="330"/>
-      </g>
-      <g stroke="currentColor" stroke-width="3">
-        <line x1="470" y1="76" x2="710" y2="76"/><line x1="470" y1="124" x2="710" y2="124"/>
-        <line x1="470" y1="172" x2="710" y2="172"/><line x1="470" y1="220" x2="710" y2="220"/>
-        <line x1="470" y1="268" x2="710" y2="268"/>
-      </g>
-      <line x1="452" y1="300" x2="728" y2="300" stroke="currentColor" stroke-width="3"/>
-      <path d="M452 300 L452 420 L728 420 L728 300" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
-      <line x1="470" y1="330" x2="710" y2="330" stroke="var(--v5)" stroke-width="4"/>
-      <line x1="470" y1="344" x2="710" y2="344" stroke="currentColor" stroke-width="4"/>
-      <g fill="var(--led)" stroke="currentColor" stroke-width="2">
-        <rect x="474" y="364" width="90" height="40" rx="3"/>
-        <rect x="580" y="364" width="60" height="32" rx="3"/>
-      </g>
-      <circle cx="676" cy="382" r="16" fill="var(--led)" stroke="currentColor" stroke-width="2"/>
-      <rect x="728" y="372" width="18" height="24" fill="var(--led)" stroke="currentColor" stroke-width="2"/>
       <g font-size="11" fill="currentColor">
-        <text x="519" y="388" text-anchor="middle">NANO</text>
-        <text x="610" y="384" text-anchor="middle">SD</text>
-        <text x="676" y="386" text-anchor="middle">1000µ</text>
-        <text x="716" y="364" text-anchor="end" fill="var(--muted)">DC in</text>
-        <text x="716" y="324" text-anchor="end" fill="var(--v5)">+5 V rail</text>
-        <text x="716" y="358" text-anchor="end" fill="currentColor">GND rail</text>
-        <text x="446" y="296" text-anchor="end" fill="var(--muted)">lid</text>
+        <text x="566" y="134">USB</text>
+        <text x="566" y="202">SD card</text>
+        <text x="566" y="268">power in</text>
+        <text x="566" y="104" font-size="10" fill="var(--muted)">END WALL</text>
+        <text x="468" y="398">socket on the side wall</text>
+        <text x="468" y="412" font-size="10" fill="var(--muted)">in parallel with the terminal block</text>
       </g>
+
+      <g stroke="var(--muted)" stroke-width="1.2" fill="none">
+        <line x1="100" y1="412" x2="324" y2="412"/>
+        <line x1="100" y1="406" x2="100" y2="418"/><line x1="324" y1="406" x2="324" y2="418"/>
+      </g>
+      <text x="212" y="430" text-anchor="middle" font-size="12" fill="var(--muted)">101.6 mm &#183; 4 &#215; one inch</text>
+
+      <text x="302" y="474" text-anchor="middle" font-size="12" fill="var(--muted)">SECTION THROUGH THE BOX</text>
+      <g stroke="var(--v5)" stroke-width="3" marker-end="url(#up)">
+        <line x1="120" y1="508" x2="120" y2="492"/><line x1="212" y1="508" x2="212" y2="492"/>
+        <line x1="304" y1="508" x2="304" y2="492"/>
+      </g>
+      <text x="356" y="500" font-size="11" fill="var(--v5)">pillars, up to the cube</text>
+      <line x1="60" y1="508" x2="544" y2="508" stroke="currentColor" stroke-width="3"/>
+      <path d="M60 508 L60 596 L544 596 L544 508" fill="var(--panel)" stroke="currentColor" stroke-width="2"/>
+      <line x1="92" y1="520" x2="332" y2="520" stroke="var(--v5)" stroke-width="4"/>
+      <line x1="84" y1="532" x2="340" y2="532" stroke="currentColor" stroke-width="4"/>
+      <g fill="var(--led)" stroke="currentColor" stroke-width="2">
+        <rect x="372" y="546" width="104" height="38" rx="3"/>
+        <rect x="486" y="546" width="46" height="30" rx="3"/>
+        <circle cx="236" cy="562" r="16"/>
+      </g>
+      <rect x="544" y="548" width="14" height="24" fill="var(--led)" stroke="currentColor" stroke-width="2"/>
+      <g font-size="11" fill="currentColor">
+        <text x="424" y="570" text-anchor="middle">NANO</text>
+        <text x="509" y="566" text-anchor="middle">TERM</text>
+        <text x="236" y="566" text-anchor="middle">1000&#181;</text>
+        <text x="54" y="504" text-anchor="end" fill="var(--muted)">lid</text>
+        <text x="348" y="524" fill="var(--v5)">+5 V rails</text>
+        <text x="348" y="538" fill="currentColor">GND ring</text>
+      </g>
+      <defs>
+        <marker id="up" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="context-stroke"/>
+        </marker>
+      </defs>
     </svg>
     <p class="key"><span class="v5">+5 V: pillars, rails and spines</span><span class="gnd">GND ring, risers and layer rails</span></p>
-    <figcaption><b>The base, as built.</b> Each rail ties the five pillars of one
-    row, so up to 25 LEDs and 1.5 A, and meets a spine at both ends so it is fed
-    from two directions. All of it is 0.9 mm tinned copper, which is 2.2 mΩ per
-    100 mm — the drop across the longest run in the cube is under 3 mV, so no
-    power needs injecting at the top. GND is a ring of the same wire picking up
-    the four corner risers that carry each layer's rails down. The socket is on
-    the end wall; the lead is the only thing that shows.</figcaption>
+    <figcaption><b>The base, as built.</b> The cube occupies rather less than half
+    the lid; the rest of the box holds the electronics. Each rail ties the five
+    pillars of one row, so up to 25 LEDs and 1.5 A, and meets a spine at both
+    ends so it is fed from two directions. All of it is 0.9 mm tinned copper, at
+    2.2 m&#937; per 100 mm &#8212; the drop across the longest run in the cube is under
+    3 mV, so no power needs injecting at the top. GND is a ring of the same wire
+    picking up the four corner risers that carry each layer's rails down. The end
+    wall gives access to the USB lead, the SD card for changing, and the power
+    terminal block; a socket on the side wall is wired in parallel with it, so the
+    cube can be fed from either.</figcaption>
   </figure>
 
   <h3>Where to feed the supply</h3>
