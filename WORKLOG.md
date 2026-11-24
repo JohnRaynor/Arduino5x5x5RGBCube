@@ -66,3 +66,48 @@
 - Fix: `beginSd()` sends 160 idle clocks with CS high (the spec asks for 74) to end any transaction and return the card to its power-up state, then retries `sd.begin()` up to three times. 18904 B flash, 596 B RAM free.
 - Asked whether forgetting to switch the cube supply on could damage the Nano or the USB port. It cannot: the 1N5819 has its anode on the cube rail and its cathode on the Nano 5V pin, so current flows supply -> Nano only, and the cube can never draw through USB. The only remaining path is D6 -> 330 ohm -> the first LED DIN clamp, about 10 mA, well inside the 40 mA pin limit. Added a section to the wiring plan including the bench check for diode orientation (brick off + USB in -> cube must stay completely dark).
 - Pattern iteration was too slow (edit, save, click Generate). Added `cube_live.py`: `show()` puts a frame on screen or on the real cube immediately, from inside the code being written, and blocks until it is displayed — so stepping a debugger through a generator walks the cube frame by frame. Targets "window" (default, no hardware), "cube", or "both". `send_serial` gained `open_cube()` / `send_frame()` / `resume_random()` so the port can be held open, since reopening resets the Arduino and costs two seconds.
+
+## 2026-11-24 — where things stand
+
+Written at the end of a long session, so a fresh start has the context.
+
+**Working on real hardware:** Nano, SD module and a handful of LEDs on a
+breadboard. Previews over USB, random playback from the SD card, pattern
+transfer to the card, and the editor all work. Cube construction is under way
+and slow.
+
+**Hardware as it sits**
+
+- LEDs are WS2812-family, pin order `DIN · GND · VDD · DOUT`. Sketch uses
+  `WS2812B` / `GRB`. Leg lengths: GND 16.5, VDD 15, DIN/DOUT 14 mm.
+- Nano on COM9 (a CH340; the other five COM ports on this machine are
+  Bluetooth decoys). SD chip select D3, LED data D6 through 330 Ω.
+- Temporary 2 A bench supply, so `MAX_MILLIAMPS` is **1000**. Back to 3000
+  with the 5 V 10 A brick (COOLM, 5.5 × 2.5 mm plug — the socket must be
+  2.5 mm, not 2.1).
+- SD SPI clock is 4 MHz (`SD_SCK_SPEED`). It was dropped from 8 while chasing
+  a fault that turned out to be something else; 8 would probably be fine.
+
+**Settled decisions, so they are not reopened**
+
+- 20.32 mm pitch (8 holes of 0.1 inch stripboard), 100 × 160 mm Eurocard base.
+- VDD on the vertical pillars, GND on per-row rails — keeps each row's data
+  return local.
+- All five layers identical, *not* rotated; alternate rows within a layer are
+  turned 180°. One routed data jumper per layer boundary.
+- No decoupling caps inside the cube volume; two or three on the base board.
+- No 8×8×8 follow-on.
+
+**Next up**
+
+1. Carry on building layers. Test each one with `chain_test` before stacking.
+2. Put `MAX_MILLIAMPS` back to 3000 when the real brick goes in.
+3. Bench check still outstanding: brick off, USB in, preview — the cube must
+   stay completely dark, which proves the Schottky is the right way round.
+
+**Open, minor**
+
+- `cube_live.show()` calls left in a generator will also fire when the editor's
+  **Generate…** runs it, popping up a window. Harmless.
+- The editor does not auto-rerun a generator when the file changes; offered,
+  not built.

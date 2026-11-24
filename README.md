@@ -7,33 +7,53 @@ project inherits its editor, pattern-file and serial-protocol ideas from.
 
 ## Status
 
-**Software written, hardware not started.** The wiring plan, the PC editor
-and the Arduino sketch all exist; the sketch compiles for the Nano and the PC
-side is tested against a model of it. No LEDs have been bought yet, so nothing
-has run on real hardware. See [WORKLOG.md](WORKLOG.md) for progress.
+**Being built.** The PC tools and the Arduino sketch are written and working
+against real hardware: a Nano, an SD module and a handful of LEDs on a
+breadboard play patterns, take live previews over USB, and read patterns from
+the card. Cube construction is under way and slow. See
+[WORKLOG.md](WORKLOG.md) for the running account.
+
+Running on a temporary 2 A bench supply, so `MAX_MILLIAMPS` in the sketch is
+set to **1000**. Put it back to 3000 when the 5 V 10 A brick goes in — both
+figures are in the comment above the define.
+
+## The LEDs
+
+> **Pin order is `DIN · GND · VDD · DOUT`.** Not the APA106 order this project
+> was originally designed around, which has the middle two swapped. Getting it
+> wrong destroys the LED instantly — that is how the first one went. Before
+> powering anything newly soldered, put **100 Ω in series with the 5 V feed**:
+> right way round the chip idles at about 1 mA, wrong way round it draws about
+> 40 mA and stays dark, and nothing can be damaged either way.
+
+They are WS2812-family 5 mm diffused parts, so the sketch uses `WS2812B` and
+`GRB`. Legs measured: GND 16.5 mm, VDD 15 mm, DIN and DOUT 14 mm each.
 
 ## The design decision
 
-The cube uses **4-leg addressable RGB LEDs** (APA106-F5 or PL9823-F5: a 5 mm
-diffused LED with a WS2812-style driver inside) rather than plain common-anode
-RGB LEDs with external drivers. That choice removes the driver ICs, the layer
-switching transistors and the 80 wires from cube to board that a multiplexed
-design needs, and lets every LED be lit continuously at full brightness. The
-Nano is comfortably fast enough: the whole cube is a 375-byte frame buffer
-sent over one data pin with FastLED.
+The cube uses **4-leg addressable RGB LEDs** — a 5 mm diffused LED with a
+WS2812-style driver inside — rather than plain common-anode RGB LEDs with
+external drivers. That removes the driver ICs, the layer switching transistors
+and the 80 wires from cube to board that a multiplexed design needs, and lets
+every LED be lit continuously at full brightness. The Nano is comfortably fast
+enough: the whole cube is a 375-byte frame buffer sent over one data pin with
+FastLED.
 
 Full wiring plan, with diagrams, parts list and build order:
 [docs/wiring-plan.html](docs/wiring-plan.html) (open it in a browser).
 
-In one paragraph: each LED has DIN, VDD, GND and DOUT legs. VDD stays
-straight and is soldered to the LED below, so the 25 VDD legs per layer form
-the cube's vertical columns exactly as the anode columns do in the 4×4×4. GND
-bends to the back into a rail per layer; DIN and DOUT bend sideways so data
-snakes through each layer in a serpentine. Five identical layers are built on
-a jig and stacked, alternate layers rotated 180° so the layer-to-layer data
-pitch is 20.32 mm — eight holes of 0.1 inch stripboard. The cube is powered directly from a 5 V 5 A supply with
-a software current cap; the Nano runs from USB or the same supply via a
-Schottky diode.
+In one paragraph: the legs are too short to span the 20.32 mm layer pitch, so
+the cube is carried by **25 vertical pillars of 0.9 mm tinned copper wire**,
+one per column, with each LED's VDD leg soldered to the pillar that passes it.
+GND bends to the back into a rail per row; DIN and DOUT bend sideways so data
+snakes along each row, with **alternate rows turned 180°** so each DOUT reaches
+the next DIN. The supply legs leave at right angles to the pin row, so turning
+a row barely moves them. All five layers are identical — the layers are *not*
+rotated, which would stop the pillars lining up — at the cost of one routed
+data jumper per layer boundary. Pitch is 20.32 mm, eight holes of 0.1 inch
+stripboard, and the stack stands on a 100 × 160 mm Eurocard. The cube is
+powered directly from a 5 V supply with a software current cap; the Nano runs
+from USB or the same supply through a Schottky diode.
 
 ## Layout
 
