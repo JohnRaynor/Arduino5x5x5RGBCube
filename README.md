@@ -44,6 +44,7 @@ Schottky diode.
 | `cube_layout.py` | done | `led_index(x, y, z)`: the one place the LED chain order is defined. Must match `ledIndex()` in the sketch. |
 | `patterns.py` | done | Read / write pattern files. |
 | `send_serial.py` | done | `CUBE` serial protocol: live preview and SD-card write. Tested against a model of the sketch, not yet against hardware. |
+| `cube_live.py` | done | Watch a pattern as you write it: `show()` puts a frame on screen or on the real cube straight away. |
 | `patterngen.py` | done | Building patterns in code: named regions (planes, columns, shells, faces…) and a `Scene` that paints and fades them. |
 | `make_sample_patterns.py` | done | The pattern generators. Each appears in the editor's **Generate…** dialog and is written to `Patterns/` when run. |
 | `Patterns/` | | Pattern files. `chain_test.bin` lights one LED at a time in chain order — the first thing to run on the real cube. |
@@ -210,6 +211,59 @@ frame = new_frame(time_ms=100)
 frame["colours"][led_index(x=2, y=0, z=4)] = [255, 80, 0]
 write_pattern("Patterns/example.bin", [frame])
 ```
+
+## Watching a pattern as you write it
+
+Editing a generator, saving, then clicking **Generate…** is a slow way to see
+the effect of a one-line change. `cube_live` skips all of it — call `show()`
+from inside the code you are working on and the frame appears immediately:
+
+```python
+import cube_live
+from patterngen import *
+
+def my_pattern():
+    scene = Scene(50)
+    for z in range(SIZE):
+        scene.paint(layer(z), RED)
+        scene.hold()
+        cube_live.show(scene)        # <- look at it right now
+    return scene.frames
+
+my_pattern()
+```
+
+Run that file directly — `python my_pattern.py`, or from your editor's Run
+button, or under a debugger. Every `show()` blocks until the frame is actually
+displayed, so **stepping through the loop in a debugger walks the cube through
+the pattern one frame at a time**, which is the quickest way to find the point
+where a pattern stops doing what you meant.
+
+Frames go to a window by default, which needs no hardware and is instant. To
+watch the real cube instead, say so once at the top:
+
+```python
+cube_live.target("cube")     # or "both", to see it in each place at once
+```
+
+| Call | What it does |
+|---|---|
+| `show(x)` | Display one frame. `x` may be a frame, a `Scene` (its working frame is used), or a bare list of 125 colours. A list of frames is played in order. |
+| `play(frames)` | Play a whole list, each for its own display time. |
+| `off()` | Blank it. |
+| `target(where)` | `"window"`, `"cube"` or `"both"`. |
+| `close()` | Hand the cube back to its own SD playback and release the port. Happens automatically when the script ends. |
+
+Two things to know when the target is the cube. The port is opened once and
+held, because reopening it resets the Arduino and costs two seconds — so keep
+one script running rather than starting a fresh one per change, and note that
+the editor cannot use the port at the same time. And the sketch holds the last
+frame it was sent for 60 seconds before falling back to random SD playback, so
+a single `show()` does not stay up indefinitely.
+
+If you leave `cube_live.show()` calls in a generator that the editor's
+**Generate…** dialog also runs, they will fire there too and pop up a window.
+Harmless, but worth knowing why it appeared.
 
 ## Checking the SD card
 

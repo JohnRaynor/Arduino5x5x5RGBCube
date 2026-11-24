@@ -176,6 +176,27 @@ def _resume_random(ser):
     _wait_for(ser, "RESUMED", 5)
 
 
+def open_cube(port):
+    """Open a connection and leave it open, for sending frames one at a time.
+
+    Opening the port resets the Arduino, so hold on to what this returns for as
+    long as you are working: reconnecting costs about two seconds each time.
+    Pass it to send_frame() and resume_random(), and close() it when done.
+    """
+    return _connect(port)
+
+
+def send_frame(ser, frame):
+    """Show one frame on an already-open connection and wait for it to finish."""
+    _command(ser, b"CUBEP" + encode_frame(frame))
+    _wait_for(ser, "FRAME", max(5, frame["time"] / 1000 + 3))
+
+
+def resume_random(ser):
+    """Hand the cube back to its own SD playback."""
+    _resume_random(ser)
+
+
 def preview_frames(port, frames, after_preview=None):
     """Display the frames on the physical cube without changing the SD card.
 
