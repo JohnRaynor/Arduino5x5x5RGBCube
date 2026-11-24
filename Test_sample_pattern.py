@@ -12,6 +12,7 @@ import make_sample_patterns
 
 # ---------------------------------------------------------------- settings --
 GENERATOR = "test_fade_many"    # which generator to watch
+GENERATOR = "random_rain"         # which generator to watch
 ON_CUBE = False                 # True drives the real cube instead of a window
 REPEAT = True                   # keep looping until the window is closed
 BUILD_ONLY = False              # True stops after generating, skipping playback

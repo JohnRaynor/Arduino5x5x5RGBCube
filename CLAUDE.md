@@ -4,8 +4,10 @@ A 5×5×5 RGB LED cube (125 WS2812-family LEDs) on an Arduino Nano, plus Python
 tools to design and play patterns. Successor to Arduino4x4Cube, from which the
 editor, pattern-file format and serial protocol are inherited.
 
-John is building the cube by hand; construction is slow and ongoing. The
-software works against real hardware.
+The cube is **built and working**. Attention is on patterns now, not
+hardware. Pitch is one inch, alternate layers are rotated 180°, and it
+stands on a plastic box — `docs/wiring-plan.html` is the build document and
+differs from the finished object in a few places, which it lists up front.
 
 ## Facts that cost money if you get them wrong
 
@@ -18,8 +20,9 @@ software works against real hardware.
   dark. Nothing can be destroyed either way. A standing habit, not a one-off.
 - **The 330 Ω on D6 is not optional.** It is the sacrificial part that stops a
   wiring mistake taking the Nano's pin with it.
-- `MAX_MILLIAMPS` must stay below what the supply can deliver. Currently
-  **1000** for a temporary 2 A bench supply; 3000 for the real 5 V 10 A brick.
+- `MAX_MILLIAMPS` must stay below what the supply can deliver. It is **1000**
+  against a 5 V 2 A supply, which testing showed is ample and runs cool.
+  Don't raise it without checking what the supply can actually give.
 
 ## Layout
 

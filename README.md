@@ -7,15 +7,18 @@ project inherits its editor, pattern-file and serial-protocol ideas from.
 
 ## Status
 
-**Being built.** The PC tools and the Arduino sketch are written and working
-against real hardware: a Nano, an SD module and a handful of LEDs on a
-breadboard play patterns, take live previews over USB, and read patterns from
-the card. Cube construction is under way and slow. See
-[WORKLOG.md](WORKLOG.md) for the running account.
+**Built and working.** All 125 LEDs run, patterns play from the SD card,
+previews stream over USB, and the editor writes new patterns to the card. See
+[WORKLOG.md](WORKLOG.md) for how it got there.
 
-Running on a temporary 2 A bench supply, so `MAX_MILLIAMPS` in the sketch is
-set to **1000**. Put it back to 3000 when the 5 V 10 A brick goes in — both
-figures are in the comment above the define.
+The **2 A supply is ample** and does not run warm — it is rare for even half
+the LEDs to be lit, and rarer still at full brightness — so `MAX_MILLIAMPS`
+stays at **1000** and the 10 A brick is not needed. Raise it if a pattern ever
+looks dim; it is one recompile.
+
+The **Schottky is confirmed** to keep the cube off the USB port: with the
+supply disconnected the Nano runs on USB and the cube stays completely dark, so
+forgetting to switch the supply on cannot damage the Nano or the computer.
 
 ## The LEDs
 
@@ -42,18 +45,31 @@ FastLED.
 Full wiring plan, with diagrams, parts list and build order:
 [docs/wiring-plan.html](docs/wiring-plan.html) (open it in a browser).
 
-In one paragraph: the legs are too short to span the 20.32 mm layer pitch, so
+As built, in one paragraph: the legs are too short to span the layer pitch, so
 the cube is carried by **25 vertical pillars of 0.9 mm tinned copper wire**,
 one per column, with each LED's VDD leg soldered to the pillar that passes it.
 GND bends to the back into a rail per row; DIN and DOUT bend sideways so data
 snakes along each row, with **alternate rows turned 180°** so each DOUT reaches
 the next DIN. The supply legs leave at right angles to the pin row, so turning
-a row barely moves them. All five layers are identical — the layers are *not*
-rotated, which would stop the pillars lining up — at the cost of one routed
-data jumper per layer boundary. Pitch is 20.32 mm, eight holes of 0.1 inch
-stripboard, and the stack stands on a 100 × 160 mm Eurocard. The cube is
-powered directly from a 5 V supply with a software current cap; the Nano runs
-from USB or the same supply through a Schottky diode.
+a row barely moves them.
+
+**Alternate layers are rotated 180°** — built on the same jig but with the data
+direction reversed, which turned out to simplify construction rather than
+complicate it, and leaves each layer's chain ending directly beneath the next
+layer's start, so the link between layers is a short vertical hop instead of a
+wire routed round the outside. This is what `led_index()` has always modelled.
+
+**Pitch is one inch** (25.4 mm) in all three axes — ten hole spacings on 0.1 inch
+board, so a piece of stripboard makes a convenient template. The 20.32 mm
+considered earlier looked cramped. The cube is therefore about 102 mm on a side.
+
+The stack stands on a **plastic box**, which hides the tie-bar wiring and the
+Arduino. A Eurocard base was considered and dropped: heavy rails have to be
+added for the current whatever the base is made of, so the stripboard copper
+earns nothing, and Eurocard does not come in a convenient size for this.
+
+The cube is powered directly from a 5 V supply with a software current cap; the
+Nano runs from USB or the same supply through a Schottky diode.
 
 ## Layout
 

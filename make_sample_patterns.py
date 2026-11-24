@@ -32,7 +32,6 @@ def test_fade_many(time_ms=100):
         column2 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
         column3 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
         scene.fade_many(((column(*column1), RANDOMCOLOUR()), (column(*column2), RANDOMCOLOUR()), (column(*column3), RANDOMCOLOUR())), steps=30)
-        cube_live.show(scene)            # <- the cube as it stands after this pass
  
     return scene.frames
 
@@ -64,7 +63,7 @@ def handover(time_ms=60):
     scene.fade_out(ALL, steps=20)
     return scene.frames
 
-def random_rain(time_ms=50):
+def random_rain(time_ms=10):
     """simulate rain and splash effects."""
     scene = Scene(time_ms)
     for splashes in range(20):
@@ -80,6 +79,7 @@ def random_rain(time_ms=50):
             scene.paint(column(x, y) & plane("z", z), (0,0,0))
         scene.fade_in(plane("z", 0), (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)), steps=7)
         scene.fade(plane("z", 0), (0, 0, 0), steps=20,time_ms=10)
+        cube_live.show(scene)            # <- the cube as it stands after this pass
     return scene.frames
 
 def breadboard_test(time_ms=60):

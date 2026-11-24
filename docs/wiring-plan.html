@@ -81,13 +81,39 @@
   </header>
 
   <div class="changed">
+    <h3>As built — where the finished cube differs from this plan</h3>
+    <p>The cube is complete and working. Five things went differently during
+    construction, and this page has not been redrawn around them.</p>
+    <ul>
+      <li><b>Alternate layers <i>are</i> rotated 180°</b>, contrary to the
+      argument below. Built on the same jig with the data direction reversed,
+      which simplified construction and makes the link between layers a short
+      vertical hop — each layer's chain ends directly beneath the next layer's
+      start. <code>led_index()</code> has always modelled this, so no code
+      changed.</li>
+      <li><b>Pitch is one inch (25.4 mm)</b>, not 20.32 mm — ten hole spacings
+      on 0.1″ board, so stripboard still serves as a template. 20.32 mm looked
+      cramped. The cube is about 102 mm on a side, and every "20.32 mm" and
+      "81.3 mm" below should be read as 25.4 mm and 101.6 mm.</li>
+      <li><b>No Eurocard base.</b> Heavy rails are needed for the current
+      whatever the base is made of, so the stripboard copper earns nothing, and
+      Eurocard comes in no convenient size. The cube stands on a <b>plastic
+      box</b> that hides the tie-bar wiring and the Arduino. <i>The base board
+      section and its diagram below are superseded.</i></li>
+      <li><b>A 5 V 2 A supply is ample</b> and runs cool; the 10 A brick was not
+      needed. <code>MAX_MILLIAMPS</code> is 1000, not 3000.</li>
+      <li><b>The Schottky is confirmed</b> to keep the cube off the USB port.</li>
+    </ul>
+  </div>
+
+  <div class="changed">
     <h3>What changed from revision 1</h3>
     <p>Revision 1 assumed APA106 parts with legs long enough to reach from one layer to the next. Neither held.</p>
     <ul>
       <li><b>Pinout.</b> The LEDs are WS2812-family, pin order <b>DIN · GND · VDD · DOUT</b>. That is the middle two pins swapped from the APA106 order the first revision was drawn for. Getting this wrong destroys the LED instantly.</li>
       <li><b>Leg lengths.</b> GND 16.5 mm, VDD 15 mm, DIN and DOUT 14 mm each — too short to span the 20.32 mm layer pitch. The vertical columns are now <b>pillars of 0.9 mm tinned copper wire</b> that each LED's VDD leg solders onto, rather than legs soldered to legs.</li>
       <li><b>Pitch.</b> 20.32 mm, which is 8 holes of 0.1″ stripboard, matching the existing 4×4×4 and letting the cube stand on a stripboard base.</li>
-      <li><b>Layers are no longer rotated.</b> All five are now built identically on one jig, at the cost of one routed data jumper per layer boundary. Rotating them is incompatible with pillars that must line up vertically.</li>
+      <li><b>Layers.</b> This revision argued for five identical, unrotated layers. The build went the other way — see the as-built panel above.</li>
       <li><b>Sketch settings.</b> <code>WS2812B</code> and <code>GRB</code>, not <code>APA106</code> and <code>RGB</code>.</li>
     </ul>
   </div>
@@ -162,7 +188,7 @@
 
   <h2>One layer</h2>
 
-  <p>All five layers are identical, built on the same jig. Data snakes along the rows, so <b>alternate rows are turned 180°</b> — that is what lets each DOUT reach the DIN beside it with the LEDs' own legs. Turning a row does not disturb the supply legs, because they leave at right angles to the pin row: GND still reaches the rail behind, VDD still reaches the pillar in front.</p>
+  <p>Every layer is built on the same jig, with alternate layers turned 180° (see above). Data snakes along the rows, so <b>alternate rows are turned 180°</b> — that is what lets each DOUT reach the DIN beside it with the LEDs' own legs. Turning a row does not disturb the supply legs, because they leave at right angles to the pin row: GND still reaches the rail behind, VDD still reaches the pillar in front.</p>
 
   <figure>
     <svg viewBox="0 0 760 545" role="img" aria-label="Plan view of one layer: 25 LEDs in a five by five grid at 20.32 millimetre pitch. The data path snakes along each row, reversing direction every row, entering at the front-left LED and leaving at the back-right. A vertical pillar stands 6 millimetres in front of each LED, and a ground rail runs along the back of each row, the five rails tied together at the left and right edges.">
@@ -218,7 +244,7 @@
       </g>
     </svg>
     <p class="key"><span class="v5">VDD pillar (vertical, through all layers)</span><span class="gnd">GND rail and tie bar</span><span class="dat">data</span></p>
-    <figcaption><b>Layer plan, identical for all five layers.</b> LED pitch 20.32 mm — eight holes of 0.1″ stripboard. The chain enters at the front-left LED and leaves at the back-right one, so each layer's exit is diagonally opposite its entry; the jumper to the next layer is routed along the back and left edges rather than across the middle. The five GND rails are tied at both the left and the right edge, which halves their impedance and stiffens the layer for handling.</figcaption>
+    <figcaption><b>Layer plan.</b> LED pitch 20.32 mm — eight holes of 0.1″ stripboard. The chain enters at the front-left LED and leaves at the back-right one, so each layer's exit is diagonally opposite its entry; because alternate layers are rotated, that exit sits directly below the next layer's entry, so the link between layers is a short vertical hop. The five GND rails are tied at both the left and the right edge, which halves their impedance and stiffens the layer for handling.</figcaption>
   </figure>
 
   <h2>The stack</h2>
@@ -287,6 +313,8 @@
   </figure>
 
   <h2>The base board and where power goes in</h2>
+
+  <p class="meta"><b>Superseded:</b> the cube was built on a plastic box, not a stripboard base. Kept because the power-feed reasoning below still applies to whatever the rails are mounted on.</p>
 
   <p>Use a <b>100 × 160 mm Eurocard stripboard</b>, not a 100 mm square. The layer footprint is about 93 × 87 mm once the pillars in front and the rails and tie bars behind are counted, which leaves nothing usable on a square board. On a Eurocard the cube takes one end and the Nano, SD module, socket and capacitor live in the 67 × 100 mm left over.</p>
 
@@ -378,10 +406,10 @@
 
   <p>125 LEDs at full white is 7.5 A, which nobody runs. The sketch caps it:</p>
 
-  <pre><code>#define MAX_MILLIAMPS 3000
+  <pre><code>#define MAX_MILLIAMPS 1000   // as built: a 5 V 2 A supply
 FastLED.setMaxPowerInVoltsAndMilliamps(5, MAX_MILLIAMPS);</code></pre>
 
-  <p>3 A across 125 LEDs is 24 mA each — about 40 % of full white with every LED lit, which on a diffused cube is already bright enough to be uncomfortable to look at directly. It also keeps a 5.5 × 2.5 mm chassis socket inside its rating, which the 5 A the supply could deliver would not. Raise the number later if the cube turns out dimmer than expected; it is one recompile.</p>
+  <p>1 A across 125 LEDs is 8 mA each if they were all lit at once, which in practice they never are — patterns light a fraction of the cube, and rarely at full brightness. Testing the finished cube showed a 2 A supply is ample and does not run warm, so the figure stayed at 1000 rather than going up when the bigger brick became available. Raise it if a pattern ever looks dim; it is one recompile, and the supply has headroom.</p>
 
   <table>
     <tr><th>Conductor</th><th class="n">Worst current</th><th>Verdict</th></tr>
