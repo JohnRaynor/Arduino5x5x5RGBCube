@@ -13,6 +13,7 @@ Two ways to build frames, both shown below:
 import random
 from pathlib import Path
 
+import cube_live                 # cube_live.show(x) anywhere below shows x at once
 from cube_layout import SIZE, led_index
 from patterns import new_frame, write_pattern
 from patterngen import (ALL, CENTRE, CORNERS, EDGES, FACES, MIDDLE, OUTER,

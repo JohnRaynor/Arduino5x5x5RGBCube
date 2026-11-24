@@ -1,20 +1,24 @@
 """Run one generator and watch it. Press F5 in VS Code.
 
-Edit GENERATOR below to pick which one. Nothing else needs changing.
+Set GENERATOR below to pick which one. Keep it to a single line: a second
+GENERATOR = ... line further down silently wins, and then a breakpoint in the
+generator you meant never gets hit.
 
-To step through a pattern as it is built, put a breakpoint on the
-cube_live.show(scene) line inside the generator in make_sample_patterns.py and
-press F5: show() blocks until the frame is on screen, so each step moves the
-cube on by one frame.
+To step through a pattern as it is built, put a breakpoint on a
+cube_live.show(...) line inside that generator in make_sample_patterns.py and
+press F5. show() blocks until the frame is on screen, so each step moves the
+cube on by one frame. Use F5 (Start Debugging), not Ctrl-F5 (Run Without
+Debugging) — the latter ignores breakpoints.
 """
+import inspect
+
 import cube_live
 import make_sample_patterns
 
 # ---------------------------------------------------------------- settings --
-GENERATOR = "test_fade_many"    # which generator to watch
-GENERATOR = "random_rain"         # which generator to watch
+GENERATOR = "test_fade_many"    # which generator to watch - one line only
 ON_CUBE = False                 # True drives the real cube instead of a window
-REPEAT = True                   # keep looping until the window is closed
+REPEAT = False                  # keep looping until the window is closed
 BUILD_ONLY = False              # True stops after generating, skipping playback
 # ----------------------------------------------------------------------------
 
@@ -30,8 +34,16 @@ def main():
     if ON_CUBE:
         cube_live.target("cube")
 
-    # Any cube_live.show() calls inside the generator fire during this line.
-    frames = generators[GENERATOR]()
+    generator = generators[GENERATOR]
+    print(f"running {GENERATOR}() ...")      # say it before, not after, so a
+    #                                          breakpoint that never fires is
+    #                                          obviously in a different function
+    if "cube_live.show" not in inspect.getsource(generator):
+        print(f"   note: {GENERATOR} contains no cube_live.show(...) call, so you")
+        print("   will see the finished pattern rather than it being built, and a")
+        print("   breakpoint on a show() line elsewhere will not be reached.")
+
+    frames = generator()                     # show() calls inside fire here
     seconds = sum(frame["time"] for frame in frames) / 1000
     print(f"{GENERATOR}: {len(frames)} frames, {seconds:.1f} s per loop")
 
