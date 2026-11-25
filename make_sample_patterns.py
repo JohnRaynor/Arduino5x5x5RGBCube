@@ -25,13 +25,27 @@ patterns_dir = Path(__file__).parent / "Patterns"
 
 
 
-def twinkle(time_ms=5):
-    """Random LEDs light up and fade away, one at a time."""
+def twinkle(count=60, time_ms=30, gap=8, decay=0.75, colour=WHITE):
+    """Random LEDs light up one at a time; each has mostly faded before the next appears.
+
+    count   how many twinkles
+    gap     frames between one twinkle and the next
+    decay   how much of its brightness a lit LED keeps each frame. By the time
+            the next one lights, the last is down to decay ** gap - about 10 %
+            with the defaults, so they just overlap.
+    colour  WHITE, any other colour, or RANDOMCOLOUR for a different one each time
+    """
     scene = Scene(time_ms)
-    for _ in range(50):
-        scene.scale(ALL, 0.5)                                   # older twinkles dim
-        scene.paint(select(lambda x, y, z: random.random() < 0.001), WHITE)  # new twinkles
-        scene.fade_out(ALL, steps=15)
+    last = None
+    for _ in range(count):
+        x, y, z = (random.randrange(SIZE) for _ in range(3))
+        while (x, y, z) == last:                            # never the same LED twice running
+            x, y, z = (random.randrange(SIZE) for _ in range(3))
+        last = (x, y, z)
+        scene.paint(column(x, y) & plane("z", z), colour() if callable(colour) else colour)
+        for _ in range(gap):
+            scene.hold()                                    # capture a frame...
+            scene.scale(ALL, decay)                         # ...then let everything fade a little
     return scene.frames
 
 

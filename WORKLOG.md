@@ -139,3 +139,4 @@ as it is built, and a breakpoint on that line steps frame by frame.
 - Registered by three lines at the end of `make_sample_patterns.py`;
   `more_patterns` added to the editor's reload list so Generate... sees edits.
 
+- `twinkle` reworked to do what it was meant to: one random LED at a time (never the same twice running), each decaying by `decay` per frame so it is at about 10 % (`decay ** gap`) when the next lights. The old version used a per-LED probability, which lit nothing on most passes and sometimes two at once, and faded to full black between passes, so twinkles never overlapped. `colour=RANDOMCOLOUR` gives a different colour each time.
