@@ -27,14 +27,38 @@ patterns_dir = Path(__file__).parent / "Patterns"
 def test_fade_many(time_ms=5):
     """fade(): fade many regions at once, each to a different colour."""
     scene = Scene(time_ms)
-    for z in range(30):
-        column1 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
-        column2 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
-        column3 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
-        scene.fade_many(((column(*column1), RANDOMCOLOUR()), (column(*column2), RANDOMCOLOUR()), (column(*column3), RANDOMCOLOUR())), steps=30)
-        cube_live.show(scene)            # <- the cube as it stands after this pass
- 
+       
+    round_the_columns1 = [column(x, 0) for x in range(SIZE)]
+    round_the_columns2 = [column(SIZE - 1, y) for y in range(1,SIZE )]
+    round_the_columns3 = [column(x, SIZE - 1) for x in range(SIZE - 2, 0, -1)]
+    round_the_columns4 = [column(0, y) for y in range(SIZE-1, 0, -1 )]
+    round_the_columns = round_the_columns1 + round_the_columns2 + round_the_columns3 + round_the_columns4
+
+    MYCOLOUR = RANDOMCOLOUR() 
+    scene.fade_in( column(0, 0), MYCOLOUR, steps=30)
+    for mycolumn in range(len(round_the_columns)): 
+        MYCOLOUR = RANDOMCOLOUR() 
+        scene.crossfade(round_the_columns[mycolumn],round_the_columns[mycolumn + 1 if mycolumn < len(round_the_columns) - 1 else 0] , MYCOLOUR, steps=30)
+    scene.fade_out(column(0, 0), steps=30)
+    
+        
+        
+        # scene.fade(mycolumn, RANDOMCOLOUR(), steps=30)
+        # cube_live.show(scene)            # <- the cube as it stands after this pass
+             
+
+        # column2 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
+        # column3 = (random.randint(0, SIZE - 1), random.randint(0, SIZE - 1))
+        # a = column(*column1)
+        # b = column(*column2)
+        # c = column(*column3)
+        # scene.fade(a, RANDOMCOLOUR(), steps=30)
+        # scene.fade(round_the_columns2[0], RANDOMCOLOUR(), steps=30)
+        # scene.fade(round_the_columns3[0], RANDOMCOLOUR(), steps=30)
+        # scene.fade(round_the_columns4[0], RANDOMCOLOUR(), steps=30)
+        # scene.fade_many(((a, RANDOMCOLOUR()), (round_the_columns2[0], RANDOMCOLOUR()), (round_the_columns3[0], RANDOMCOLOUR()), (round_the_columns4[0], RANDOMCOLOUR())), steps=30)
     return scene.frames
+ 
 
 
 def morph_between(time_ms=60):
