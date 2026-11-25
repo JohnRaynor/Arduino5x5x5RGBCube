@@ -30,7 +30,7 @@ def twinkle(time_ms=5):
     scene = Scene(time_ms)
     for _ in range(50):
         scene.scale(ALL, 0.5)                                   # older twinkles dim
-        scene.paint(select(lambda x, y, z: random.random() < 0.01), WHITE)  # new twinkles
+        scene.paint(select(lambda x, y, z: random.random() < 0.001), WHITE)  # new twinkles
         scene.fade_out(ALL, steps=15)
     return scene.frames
 
@@ -351,6 +351,10 @@ GENERATORS = {
     "test_fade_many": test_fade_many,
     "twinkle": twinkle
 }
+
+# The generators in more_patterns.py join the same list.
+from more_patterns import GENERATORS as MORE_GENERATORS
+GENERATORS.update(MORE_GENERATORS)
 
 if __name__ == "__main__":
     import sys
