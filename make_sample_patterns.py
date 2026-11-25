@@ -24,6 +24,17 @@ from patterngen import (ALL, CENTRE, CORNERS, EDGES, FACES, MIDDLE, OUTER,
 patterns_dir = Path(__file__).parent / "Patterns"
 
 
+
+def twinkle(time_ms=5):
+    """Random LEDs light up and fade away, one at a time."""
+    scene = Scene(time_ms)
+    for _ in range(50):
+        scene.scale(ALL, 0.5)                                   # older twinkles dim
+        scene.paint(select(lambda x, y, z: random.random() < 0.01), WHITE)  # new twinkles
+        scene.fade_out(ALL, steps=15)
+    return scene.frames
+
+
 def test_fade_many(time_ms=5):
     """fade(): fade many regions at once, each to a different colour."""
     scene = Scene(time_ms)
@@ -337,7 +348,8 @@ GENERATORS = {
     "three_planes": three_planes,
     "morph_between": morph_between,
     "handover": handover,
-    "test_fade_many": test_fade_many
+    "test_fade_many": test_fade_many,
+    "twinkle": twinkle
 }
 
 if __name__ == "__main__":

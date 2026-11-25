@@ -16,8 +16,8 @@ import cube_live
 import make_sample_patterns
 
 # ---------------------------------------------------------------- settings --
-GENERATOR = "test_fade_many"    # which generator to watch - one line only
-ON_CUBE = False                 # True drives the real cube instead of a window
+GENERATOR = "twinkle"    # which generator to watch - one line only
+ON_CUBE = True                 # True drives the real cube instead of a window
 REPEAT = False                  # keep looping until the window is closed
 BUILD_ONLY = False              # True stops after generating, skipping playback
 # ----------------------------------------------------------------------------
