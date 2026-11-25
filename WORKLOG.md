@@ -124,3 +124,18 @@ watching one generator; `cube_live.show()` inside a generator shows the cube
 as it is built, and a breakpoint on that line steps frame by frame.
 - Wiring plan redrawn as built: the base figure now shows the plastic box (lid from above with the one-inch pillar grid and the rails and GND ring below it, plus a section through the box with the Nano, SD, capacitor and wall socket inside), and every diagram label carries the real dimensions - 25.4 mm pitch, 101.6 mm side - instead of asking the reader to substitute them. Stripboard language removed from the power-feed list, the current table and the parts list; the places it still appears are explaining why that base was rejected.
 - Base figure redrawn to the real box: 220 x 150 mm, cube grid on the left of the lid, electronics inside towards the right. End wall carries USB access, the SD card slot for changing, and the power terminal block; a socket on the side wall is in parallel with that block. Section below shows everything enclosed.
+
+## 2026-11-25 — more patterns
+
+- Writing generators was slow because the argument types of the region
+  functions and `Scene` methods were hard to remember. Added `more_patterns.py`:
+  a one-screen quick reference in its docstring, `point(x, y, z)` for a single
+  LED, `field(rule, steps)` for per-LED rules of `(x, y, z, t)`, and eleven
+  generators — plasma, rainbow_swirl, lava_lamp, shockwave, heartbeat,
+  radar_sweep, double_helix, bouncing_ball, snake, fireworks, digital_rain.
+- All checked: they build, encode, loop without a jump where they are meant
+  to, and stay under the 1000 mA cap (peak estimate about 640 mA, fireworks).
+  lava_lamp and bouncing_ball were retuned after the first pass lit too little.
+- Registered by three lines at the end of `make_sample_patterns.py`;
+  `more_patterns` added to the editor's reload list so Generate... sees edits.
+

@@ -248,6 +248,22 @@ frame["colours"][led_index(x=2, y=0, z=4)] = [255, 80, 0]
 write_pattern("Patterns/example.bin", [frame])
 ```
 
+### More generators, and a quick reference
+
+`more_patterns.py` adds eleven more — `plasma`, `rainbow_swirl`, `lava_lamp`,
+`shockwave`, `heartbeat`, `radar_sweep`, `double_helix`, `bouncing_ball`,
+`snake`, `fireworks` and `digital_rain` — which join the same Generate… list.
+**Its opening docstring is a one-screen quick reference**: what each region
+function and `Scene` method takes, in what order, and the usual slips.
+
+It also adds two helpers:
+
+- `point(x, y, z)` — a region holding one LED.
+- `field(rule, steps)` — for effects where every LED follows the same rule.
+  `rule(x, y, z, t)` returns a colour, with `t` running from 0 to 1 across the
+  pattern; a rule that repeats when `t` goes up by 1 loops seamlessly. Most of
+  the smooth effects above are a few lines of this.
+
 ## Watching a pattern as you write it
 
 Editing a generator, saving, then clicking **Generate…** is a slow way to see

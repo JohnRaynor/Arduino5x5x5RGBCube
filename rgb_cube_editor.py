@@ -333,7 +333,7 @@ def quit_pressed():
     sys.exit()
 
 # ------------------------------------------------------------- generate ----
-GENERATOR_MODULES = ["patterngen", "make_sample_patterns"]   # reloaded on every Generate...
+GENERATOR_MODULES = ["patterngen", "more_patterns", "make_sample_patterns"]   # reloaded on every Generate...
 
 def load_generators():
     """(Re)import the generator modules so edits are picked up without restarting."""

@@ -33,6 +33,7 @@ differs from the finished object in a few places, which it lists up front.
 | `patterns.py` | The 377-byte frame format. |
 | `patterngen.py` | Named regions (`layer`, `column`, `OUTER`…) and `Scene`, for building patterns in code. |
 | `make_sample_patterns.py` | The generators. `GENERATORS` at the bottom drives the editor's **Generate…** dialog. John edits this file constantly. |
+| `more_patterns.py` | Eleven more generators, `point()`, `field()`, and a quick reference in its docstring. Merged into `GENERATORS` by three lines at the end of `make_sample_patterns.py`. |
 | `cube_live.py` | `show()` a frame straight to a window or the real cube while writing a pattern. |
 | `Test_sample_pattern.py` | F5 target in VS Code: set `GENERATOR` and watch one generator. |
 | `send_serial.py` | The `CUBE` serial protocol. |
