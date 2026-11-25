@@ -49,6 +49,11 @@ def twinkle(count=60, time_ms=30, gap=8, decay=0.75, colour=WHITE):
     return scene.frames
 
 
+def twinkle_colour():
+    """twinkle() in a different random colour each time, with a little more overlap."""
+    return twinkle(colour=RANDOMCOLOUR, decay=0.85)
+
+
 def test_fade_many(time_ms=5):
     """fade(): fade many regions at once, each to a different colour."""
     scene = Scene(time_ms)
@@ -363,7 +368,8 @@ GENERATORS = {
     "morph_between": morph_between,
     "handover": handover,
     "test_fade_many": test_fade_many,
-    "twinkle": twinkle
+    "twinkle": twinkle,
+    "twinkle_colour": twinkle_colour,
 }
 
 # The generators in more_patterns.py join the same list.
