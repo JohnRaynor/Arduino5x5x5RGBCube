@@ -84,6 +84,7 @@ class Button:
         self.name = buttonText
         self.text = None
         self.onclickFunction = onclickFunction
+        self.on_repeat = None        # step(n) for buttons that repeat while held
         self.fillColors = {"normal": "#cfe2f5", "hover": "#a6c8ea", "pressed": "#7fc47f"}
         self.buttonSurface = pygame.Surface((width, height))
         self.buttonRect = pygame.Rect(x, y, width, height)
@@ -103,9 +104,13 @@ class Button:
         anywhere over this window meanwhile would fire whatever button sits there
         the moment we return.
         """
+        global held
         if self.onclickFunction:
             self.onclickFunction()
         pygame.event.clear()
+        if self.on_repeat:           # only a real click can start a hold
+            now = pygame.time.get_ticks()
+            held = [self, now, now + REPEAT_DELAY_MS]
 
     def draw(self):
         """Drawing only — clicks arrive as events, so nothing here has side effects."""
@@ -188,6 +193,49 @@ def nextFrame():
 
 def previousFrame():
     show_frame(frameNo - 1)
+
+# Holding < or > keeps stepping, faster the longer it is held, so a long
+# pattern can be crossed in seconds.
+REPEAT_DELAY_MS = 400           # hold this long before repeating starts
+REPEAT_EVERY_MS = 80            # then step this often (about 12 a second)
+REPEAT_SPEEDS = ((0, 1), (2000, 5), (4000, 25))   # (held for ms, frames per step)
+held = None                     # [button, pressed at, next step due] while held
+
+def repeat_held_button():
+    """Step again if a repeating button is still held. Called every frame.
+
+    A hold only ever starts from a click event (Button.press). The mouse state
+    is read here solely to end it - on release, on sliding off the button, or
+    if the release event was lost - so it can never fire anything by itself.
+    """
+    global held
+    if held is None:
+        return
+    button, started, due = held
+    if not (pygame.mouse.get_pressed(num_buttons=3)[0]
+            and button.buttonRect.collidepoint(pygame.mouse.get_pos())):
+        held = None
+        return
+    now = pygame.time.get_ticks()
+    if now < due:
+        return
+    step = 1
+    for after, size in REPEAT_SPEEDS:
+        if now - started >= after:
+            step = size
+    button.on_repeat(step)
+    held[2] = now + REPEAT_EVERY_MS
+
+def key_pressed(key):
+    """Arrows step a frame (and repeat when held); Home and End jump to the ends."""
+    if key == pygame.K_RIGHT:
+        nextFrame()
+    elif key == pygame.K_LEFT:
+        previousFrame()
+    elif key == pygame.K_HOME:
+        show_frame(0)
+    elif key == pygame.K_END:
+        show_frame(len(frames) - 1)
 
 def copyFrame():
     frames.insert(frameNo, copy.deepcopy(frames[frameNo]))
@@ -596,6 +644,8 @@ button_row(by + 6 * row, (120, "Preview Cube", previewCube), (110, "Save to SD",
 Button(palette_pos[0] + 13 * (swatch + 6) + 20, palette_pos[1] - 1, 100, bh, "Custom...", custom_colour)
 
 frame_text, time_text, block_text = readouts["frame"], readouts["time"], readouts["block"]
+button_registry["<"].on_repeat = lambda n: show_frame(frameNo - n)
+button_registry[">"].on_repeat = lambda n: show_frame(frameNo + n)
 paint_text = TextBox("", (palette_pos[0], palette_pos[1] + 2 * (swatch + 6) + 10), use_font=small_font)
 status_text = TextBox("", (bx, by + 7 * row), use_font=small_font,
                       text_color=(255, 210, 120), bg_color=(60, 48, 28))
@@ -677,12 +727,18 @@ def draw_palette():
     screen.blit(small_font.render("paint", True, (160, 160, 160)), (preview.right + 8, preview.top + 9))
 
 # ------------------------------------------------------------- main loop ----
+pygame.key.set_repeat(REPEAT_DELAY_MS, REPEAT_EVERY_MS)   # held arrow keys repeat too
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             quit_pressed()
         if event.type == pygame.MOUSEBUTTONDOWN and event.button in (1, 3):
             click_at(event.pos, event.button)
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            held = None
+        if event.type == pygame.KEYDOWN:
+            key_pressed(event.key)
+    repeat_held_button()
     screen.fill((0, 0, 0))
     draw_cube()
     draw_palette()

@@ -140,3 +140,14 @@ as it is built, and a breakpoint on that line steps frame by frame.
   `more_patterns` added to the editor's reload list so Generate... sees edits.
 
 - `twinkle` reworked to do what it was meant to: one random LED at a time (never the same twice running), each decaying by `decay` per frame so it is at about 10 % (`decay ** gap`) when the next lights. The old version used a per-LED probability, which lit nothing on most passes and sometimes two at once, and faded to full black between passes, so twinkles never overlapped. `colour=RANDOMCOLOUR` gives a different colour each time.
+
+## 2026-11-26 — fast navigation in the editor
+
+- Large pattern files had no fast way through. Holding `<` or `>` now repeats
+  (after 0.4 s, about 12 steps a second) and accelerates: 5 frames a step
+  after 2 s, 25 after 4 s. Left/Right arrow keys step and repeat; Home/End
+  jump to the ends.
+- Kept consistent with the event-driven rule: a hold can only start from a
+  click event. The mouse state is read only to end it — on release, on
+  sliding off the button, or if the release event was lost.
+

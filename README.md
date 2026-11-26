@@ -119,7 +119,7 @@ Everything else is the same as the 4×4×4 editor:
 |---|---|
 | **New** | Start again with a single blank frame (asks first). |
 | **Open File** / **Write File** | Load / save a `.bin` pattern file. Opening **inserts** the file after the current frame and leaves you on its last frame, so files chain together; use **New** first to start from nothing. |
-| **<** / **>** | Step to the previous / next frame. |
+| **<** / **>** | Step to the previous / next frame. **Hold** to repeat: about 12 frames a second, then 5 at a time after 2 s and 25 at a time after 4 s, so a long pattern is crossed in seconds. The **Left** / **Right** arrow keys step too, and **Home** / **End** jump to the first / last frame. |
 | **Copy frame** | Insert a copy of the current frame in front of it. |
 | **Play** / **Stop** | One button: loop through all frames on screen using each frame's display time; click again to stop. |
 | **▲** / **▼** | Slow down / speed up the current frame by about 20 % (5 – 65535 ms). |
