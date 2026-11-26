@@ -45,12 +45,14 @@ def twinkle(count=60, time_ms=30, gap=8, decay=0.75, colour=WHITE):
         scene.paint(column(x, y) & plane("z", z), colour() if callable(colour) else colour)
         for _ in range(gap):
             scene.hold()                                    # capture a frame...
+            # cube_live.show(scene.frames[-1])              # step through the pattern
             scene.scale(ALL, decay)                         # ...then let everything fade a little
     return scene.frames
 
 
 def twinkle_colour():
     """twinkle() in a different random colour each time, with a little more overlap."""
+    # to step through it, uncomment the cube_live.show line in twinkle()
     return twinkle(colour=RANDOMCOLOUR, decay=0.85)
 
 def twinkle_red_white_blue():
@@ -59,6 +61,7 @@ def twinkle_red_white_blue():
     scene.frames.extend(twinkle(colour=RANDOMRED, count=20, decay=0.85))     # extend, not append:
     scene.frames.extend(twinkle(colour=WHITE, count=20, decay=0.85))         # each call returns a list
     scene.frames.extend(twinkle(colour=RANDOMBLUE, count=20, decay=0.85))    # of frames to add one by one
+    # to step through it, uncomment the cube_live.show line in twinkle()
     return scene.frames
 
 
@@ -95,6 +98,7 @@ def test_fade_many(time_ms=5):
         # scene.fade(round_the_columns3[0], RANDOMCOLOUR(), steps=30)
         # scene.fade(round_the_columns4[0], RANDOMCOLOUR(), steps=30)
         # scene.fade_many(((a, RANDOMCOLOUR()), (round_the_columns2[0], RANDOMCOLOUR()), (round_the_columns3[0], RANDOMCOLOUR()), (round_the_columns4[0], RANDOMCOLOUR())), steps=30)
+    # for frame in scene.frames: cube_live.show(frame)   # step through the finished pattern
     return scene.frames
  
 
@@ -110,6 +114,7 @@ def morph_between(time_ms=60):
     scene.morph(rising_plane()[2], steps=25)
     scene.hold(500)
     scene.fade_out(ALL, steps=15)
+    # for frame in scene.frames: cube_live.show(frame)   # step through the finished pattern
     return scene.frames
 
 
@@ -124,6 +129,7 @@ def handover(time_ms=60):
     scene.crossfade(plane("z", SIZE - 1), OUTER, dim(CYAN, 0.6), steps=20)
     scene.hold(400)
     scene.fade_out(ALL, steps=20)
+    # for frame in scene.frames: cube_live.show(frame)   # step through the finished pattern
     return scene.frames
 
 def random_rain(time_ms=50):
@@ -142,6 +148,7 @@ def random_rain(time_ms=50):
             scene.paint(column(x, y) & plane("z", z), (0,0,0))
         scene.fade_in(plane("z", 0), (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255)), steps=7)
         scene.fade(plane("z", 0), (0, 0, 0), steps=20,time_ms=10)
+    # for frame in scene.frames: cube_live.show(frame)   # step through the finished pattern
     return scene.frames
 
 def breadboard_test(time_ms=60):
@@ -155,6 +162,7 @@ def breadboard_test(time_ms=60):
             frame = new_frame(time_ms)
             frame["colours"][index] = list(colours)
             frames.append(frame)    
+            # cube_live.show(frame)                         # step through the pattern
 # for index in range(No_0f_LEDs):
     #     frame = new_frame(time_ms)
     #     frame["colours"][index] = [255, 255, 255]
@@ -174,6 +182,7 @@ def diagonal_wave(time_ms=70):
         scene.paint(select(lambda x, y, z, k=k: x + y + z == k), WHITE)
         scene.hold()
     scene.fade_out(ALL, steps=10)
+    # for frame in scene.frames: cube_live.show(frame)   # step through the finished pattern
     return scene.frames
 
 
@@ -188,6 +197,7 @@ def rainbow_layers(steps=30, time_ms=80):
                 for x in range(SIZE):
                     frame["colours"][led_index(x, y, z)] = list(colour)
         frames.append(frame)
+        # cube_live.show(frame)                         # step through the pattern
     return frames
 
 
@@ -201,6 +211,7 @@ def rising_plane(time_ms=120):
                 for x in range(SIZE):
                     frame["colours"][led_index(x, y, z)] = list(hsv(hue, v=0.7))
             frames.append(frame)
+            # cube_live.show(frame)                         # step through the pattern
     return frames
 
 
@@ -211,6 +222,7 @@ def chain_test(time_ms=60):
         frame = new_frame(time_ms)
         frame["colours"][index] = [255, 255, 255]
         frames.append(frame)
+        # cube_live.show(frame)                         # step through the pattern
     return frames
 
 
@@ -219,6 +231,7 @@ def fade_all(time_ms=60):
     scene = Scene(time_ms)
     scene.paint(ALL, RED)
     scene.fade_out(ALL, steps=30)
+    # for frame in scene.frames: cube_live.show(frame)   # step through the finished pattern
     return scene.frames
 
 
@@ -232,6 +245,7 @@ def shells(time_ms=40):
     scene.fade(MIDDLE, GREEN, steps=15)   # recolour one shell while the rest stay lit
     scene.hold(500)
     scene.fade_out(ALL, steps=25)
+    # for frame in scene.frames: cube_live.show(frame)   # step through the finished pattern
     return scene.frames
 
 
@@ -244,6 +258,7 @@ def plane_sweep(time_ms=50):
             scene.paint(plane(axis, n), colour)
             scene.hold()
         scene.fade_out(ALL, steps=6)
+    # for frame in scene.frames: cube_live.show(frame)   # step through the finished pattern
     return scene.frames
 
 
@@ -257,6 +272,7 @@ def column_rain(drops=20, time_ms=40, seed=1):
         scene.scale(ALL, 0.6)                                   # older drops dim
         scene.paint(column(rng.randrange(SIZE), rng.randrange(SIZE)), hsv(rng.random()))
         scene.hold(120)
+        # cube_live.show(scene.frames[-1])              # step through the pattern
     scene.fade_out(ALL, steps=15)
     return scene.frames
 
@@ -279,6 +295,7 @@ def top_face_lines(time_ms=80):
         scene.paint(select(lambda px, py, pz: px == 0 and py == 0 and pz == top - z), WHITE)
         scene.hold()
     scene.clear()
+    # for frame in scene.frames: cube_live.show(frame)   # step through the finished pattern
     return scene.frames
 
 
@@ -289,6 +306,7 @@ def growing_cube(time_ms=150):
         scene.clear()
         scene.paint(cube(n), hsv(n / 3))
         scene.hold()
+        # cube_live.show(scene.frames[-1])              # step through the pattern
     scene.fade_out(ALL, steps=10)
     return scene.frames
 
@@ -303,6 +321,7 @@ def expanding_squares(time_ms=90):
             if 0 <= n <= 2:
                 scene.paint(square(z, n), hsv(z / SIZE))
         scene.hold()
+        # cube_live.show(scene.frames[-1])              # step through the pattern
     scene.fade_out(ALL, steps=10)
     return scene.frames
 
@@ -316,6 +335,7 @@ def breathing_ball(time_ms=70):
         scene.paint(ball(r), dim(MAGENTA, 0.5))                  # the whole ball, dim
         scene.paint(ball(r - 1.0), WHITE)                        # the core, bright
         scene.hold()
+        # cube_live.show(scene.frames[-1])              # step through the pattern
     scene.fade_out(ALL, steps=8)
     return scene.frames
 
@@ -333,6 +353,7 @@ def wireframe(time_ms=60):
         scene.hold(200)
         scene.fade(FACES[name] - EDGES, (0, 0, 0), steps=5)      # keep the outline lit
     scene.fade_out(ALL, steps=15)
+    # for frame in scene.frames: cube_live.show(frame)   # step through the finished pattern
     return scene.frames
 
 
@@ -352,6 +373,7 @@ def three_planes(time_ms=100):
     scene.fade(OUTER - (px | py | pz), dim(BLUE, 0.2), steps=12)  # difference: the surface, cross cut out
     scene.hold(800)
     scene.fade_out(ALL, steps=15)
+    # for frame in scene.frames: cube_live.show(frame)   # step through the finished pattern
     return scene.frames
 
 

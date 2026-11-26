@@ -3,9 +3,14 @@
 The model mirrors rgb_cube.ino closely enough to catch protocol mistakes without
 hardware: the same FIND_MAGIC / READ_COMMAND / READ_PREVIEW states, the same
 "refresh only after SERIAL_QUIET_MS of silence" rule, the same preview hold, and
-the same no-SD-card behaviour. Run it with `python test_protocol.py`.
+the same no-SD-card behaviour. Run it with `python testing/test_protocol.py`.
 """
-import send_serial
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))   # the project's own modules
+
+import send_serial  # noqa: E402
 from patterngen import RED, Scene, ALL
 from patterns import FRAME_BYTES
 

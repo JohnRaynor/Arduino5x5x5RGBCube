@@ -163,3 +163,23 @@ as it is built, and a breakpoint on that line steps frame by frame.
 - `send_serial.preview_frames()` gained `stop` and `on_frame`; test_protocol
   covers stopping between frames and during a 3 s frame.
 
+## 2026-11-27 — stray LEDs found and fixed; a clean start
+
+- Random coloured LEDs flashing over dense patterns, mostly in the top two
+  layers, on both preview and SD playback. Ruled out first: the file on the
+  card was byte-identical to the one sent, and the same bytes looked right in
+  the simulator. A quarter-brightness copy flashed just the same - which, it
+  turned out, does not rule out power, because WS2812s dim by shortening their
+  on-time, not by lowering the current while on.
+- Two diagnostic patterns (busy colours in some layers, exactly zero in the
+  rest) showed LEDs not lighting at the end of the third layer and the start of
+  the fourth - the layer 2 to 3 data handover, counting from 0. Re-touching a
+  couple of joints there cured it. Lesson: strays confined to the far end of
+  the chain mean a marginal data joint, not power.
+- Tidied away: `testing/` now holds `test_protocol.py`, the stray-hunt patterns
+  (`diagnostic_patterns.py`, out of the Generate list) and the `sd_check`
+  sketch. Every old `.bin` moved to `Patterns/old/` so the real patterns can be
+  regenerated and checked one by one before going on a clean SD card.
+- Every generator now carries a commented-out `cube_live.show` line, ready to
+  uncomment and breakpoint.
+

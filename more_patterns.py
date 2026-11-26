@@ -55,6 +55,7 @@ import random
 from math import atan2, cos, exp, pi, sin, sqrt
 
 from cube_layout import SIZE, XYZ, led_index
+import cube_live
 from patterns import new_frame
 from patterngen import (ALL, CYAN, GREEN, MAGENTA, MID, RED, WHITE,
                         Scene, dim, hsv, select)
@@ -96,7 +97,9 @@ def plasma(steps=90, time_ms=50):
         v = (sin(x * 0.9 + a) + sin(y * 0.8 - a) + sin((x + y + z) * 0.6 + 2 * a)
              + sin(distance(x, y, z) * 1.3 - a))
         return hsv(v / 8 + t, 1.0, 0.45)
-    return field(rule, steps, time_ms)
+    frames = field(rule, steps, time_ms)
+    # for frame in frames: cube_live.show(frame)         # step through the finished pattern
+    return frames
 
 
 def rainbow_swirl(steps=60, time_ms=50):
@@ -104,7 +107,9 @@ def rainbow_swirl(steps=60, time_ms=50):
     def rule(x, y, z, t):
         angle = atan2(y - MID, x - MID) / (2 * pi)
         return hsv(angle + z * 0.1 + t, 1.0, 0.45)
-    return field(rule, steps, time_ms)
+    frames = field(rule, steps, time_ms)
+    # for frame in frames: cube_live.show(frame)         # step through the finished pattern
+    return frames
 
 
 def lava_lamp(steps=120, time_ms=50):
@@ -120,7 +125,9 @@ def lava_lamp(steps=120, time_ms=50):
             heat += 1.0 / (0.35 + distance(x, y, z, cx, cy, cz) ** 2)
         v = max(0.0, min(1.0, (heat - 0.45) / 1.2)) ** 0.7
         return hsv(0.13 * v, 1.0, 0.75 * v)         # dark red through orange to yellow
-    return field(rule, steps, time_ms)
+    frames = field(rule, steps, time_ms)
+    # for frame in frames: cube_live.show(frame)         # step through the finished pattern
+    return frames
 
 
 def shockwave(steps=40, time_ms=50):
@@ -129,7 +136,9 @@ def shockwave(steps=40, time_ms=50):
         r = distance(x, y, z)
         wave = (0.5 + 0.5 * cos(2 * pi * (r / 1.6 - 2 * t))) ** 4
         return hsv(0.55 + r * 0.06, 1.0, 0.7 * wave)
-    return field(rule, steps, time_ms)
+    frames = field(rule, steps, time_ms)
+    # for frame in frames: cube_live.show(frame)         # step through the finished pattern
+    return frames
 
 
 def heartbeat(steps=50, time_ms=20):
@@ -139,7 +148,9 @@ def heartbeat(steps=50, time_ms=20):
         beat = (exp(-((delay - 0.10) / 0.035) ** 2)
                 + 0.6 * exp(-((delay - 0.30) / 0.035) ** 2))
         return dim(RED, min(1.0, beat))
-    return field(rule, steps, time_ms)
+    frames = field(rule, steps, time_ms)
+    # for frame in frames: cube_live.show(frame)         # step through the finished pattern
+    return frames
 
 
 # ------------------------------------------------------ things that rotate --
@@ -150,7 +161,9 @@ def radar_sweep(steps=48, time_ms=40):
             return dim(GREEN, 0.35)
         behind = (t - atan2(y - MID, x - MID) / (2 * pi)) % 1.0
         return dim(GREEN, max(0.0, 1 - behind * 3) ** 2)
-    return field(rule, steps, time_ms)
+    frames = field(rule, steps, time_ms)
+    # for frame in frames: cube_live.show(frame)         # step through the finished pattern
+    return frames
 
 
 def double_helix(steps=60, time_ms=50):
@@ -163,7 +176,9 @@ def double_helix(steps=60, time_ms=50):
             weight = exp(-((x - px) ** 2 + (y - py) ** 2) / 0.5)
             total = [a + c * weight for a, c in zip(total, strand)]
         return total
-    return field(rule, steps, time_ms)
+    frames = field(rule, steps, time_ms)
+    # for frame in frames: cube_live.show(frame)         # step through the finished pattern
+    return frames
 
 
 # ------------------------------------------------------ things that move --
@@ -186,6 +201,7 @@ def bouncing_ball(steps=160, time_ms=40):
             glow = max(0.0, 1 - distance(x, y, z, *pos) / 2.0) ** 1.2
             frame["colours"][index] = list(dim(hsv(hue), glow))
         frames.append(frame)
+        # cube_live.show(frame)                         # step through the pattern
     return frames
 
 
@@ -208,6 +224,7 @@ def snake(steps=160, time_ms=70, length=7, seed=5):
         for k, cell in enumerate(reversed(body)):        # head first, brightest
             frame["colours"][led_index(*cell)] = list(dim(colour, (1 - k / length) ** 1.5))
         frames.append(frame)
+        # cube_live.show(frame)                         # step through the pattern
     return frames
 
 
@@ -229,6 +246,7 @@ def fireworks(bursts=6, time_ms=50, seed=3):
             scene.hold()
         scene.fade_out(ALL, steps=8)
         scene.hold(rng.choice((100, 250, 400)))         # a pause before the next
+    # for frame in scene.frames: cube_live.show(frame)   # step through the finished pattern
     return scene.frames
 
 
@@ -253,40 +271,11 @@ def digital_rain(steps=150, time_ms=60, seed=7):
                 falling.append(drop)
         drops = falling
         scene.hold()
+        # cube_live.show(scene.frames[-1])                       # step through the pattern
     return scene.frames
 
 
-# ------------------------------------------------------------- diagnostics --
-def _busy_and_dark(busy_layers, steps, time_ms, seed):
-    """Busy random colours on some layers, the rest held at exactly zero.
-
-    Any light at all in the dark layers is a fault: the cube was told to keep
-    them off, so whatever lights there is data the chain garbled on its way.
-    """
-    rng = random.Random(seed)
-    frames = []
-    for _ in range(steps):
-        frame = new_frame(time_ms)
-        for index, (x, y, z) in enumerate(XYZ):
-            if z in busy_layers:
-                frame["colours"][index] = [rng.randrange(256) for _ in range(3)]
-        frames.append(frame)
-    return frames
-
-
-def stray_hunt_top_dark(steps=150, time_ms=80, seed=11):
-    """Diagnostic: layers 0-2 busy, layers 3-4 must stay completely dark."""
-    return _busy_and_dark({0, 1, 2}, steps, time_ms, seed)
-
-
-def stray_hunt_bottom_dark(steps=150, time_ms=80, seed=12):
-    """Diagnostic: layers 3-4 busy, layers 0-2 must stay completely dark."""
-    return _busy_and_dark({3, 4}, steps, time_ms, seed)
-
-
 GENERATORS = {
-    "stray_hunt_top_dark": stray_hunt_top_dark,
-    "stray_hunt_bottom_dark": stray_hunt_bottom_dark,
     "plasma": plasma,
     "rainbow_swirl": rainbow_swirl,
     "lava_lamp": lava_lamp,

@@ -37,16 +37,16 @@ differs from the finished object in a few places, which it lists up front.
 | `cube_live.py` | `show()` a frame straight to a window or the real cube while writing a pattern. |
 | `Test_sample_pattern.py` | F5 target in VS Code: set `GENERATOR` and watch one generator. |
 | `send_serial.py` | The `CUBE` serial protocol. |
-| `test_protocol.py` | Drives `send_serial` against a model of the sketch. No hardware needed. |
+| `testing/` | Diagnostics kept for when they are needed: `test_protocol.py` (drives `send_serial` against a model of the sketch, no hardware), `diagnostic_patterns.py` (stray-hunt patterns for finding a bad data joint), `sd_check/` (standalone SD sketch). |
 | `sketch/rgb_cube/` | The Nano sketch: FastLED, SD playback, the serial protocol. |
-| `sketch/sd_check/` | Standalone SD diagnostic. |
 | `docs/wiring-plan.html` | The build plan. Also published as an artifact John reads at the bench. |
+| `Patterns/` | Pattern files. Everything from before the November 2026 clean start is in `Patterns/old/`. |
 | `WORKLOG.md` | Dated running account, with a handover section at the end. Add an entry for anything worth remembering. |
 
 ## Commands
 
 ```bash
-python test_protocol.py            # protocol against a model of the sketch
+python testing/test_protocol.py    # protocol against a model of the sketch
 python patterngen.py               # region and Scene self-checks
 python make_sample_patterns.py     # regenerate every pattern into Patterns/
 python cube_live.py                # walk the chain in a window
@@ -79,6 +79,9 @@ RAM after any change that adds state.
   live and the preview can be stopped. The worker touches the serial port and
   nothing else; tkinter and pygame calls - including the Show again / Resume
   dialog - must stay on the main thread, reached through `service_preview()`.
+- **Every generator carries a commented-out `cube_live.show` line** - inside the
+  loop where frames are built one at a time, or a `for frame in ...` replay at
+  the end where they come from fades. Add the same to any new generator.
 - The editor's buttons are **event-driven**. They must never poll the mouse: a
   blocking action (a preview, any modal dialog) would then fire whatever
   button sat under the cursor when it returned.

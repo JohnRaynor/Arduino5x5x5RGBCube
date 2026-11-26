@@ -248,6 +248,19 @@ frame["colours"][led_index(x=2, y=0, z=4)] = [255, 80, 0]
 write_pattern("Patterns/example.bin", [frame])
 ```
 
+### Stepping through any generator
+
+Every generator has a commented-out `cube_live.show` line ready to use:
+uncomment it, put a breakpoint on it, set `GENERATOR` in
+`Test_sample_pattern.py` and press F5.
+
+- Where a pattern is built one frame at a time in a loop, the line sits inside
+  the loop, so each step of the debugger moves the cube on by one frame in step
+  with the code. Any closing fade after the loop is not stepped.
+- Where the frames come from `fade()` / `crossfade()` calls, there is no
+  single line per frame to stop on, so the line sits at the end and steps
+  through the finished frames instead.
+
 ### More generators, and a quick reference
 
 `more_patterns.py` adds eleven more — `plasma`, `rainbow_swirl`, `lava_lamp`,
@@ -350,9 +363,19 @@ If you leave `cube_live.show()` calls in a generator that the editor's
 **Generate…** dialog also runs, they fire there too and pop up a window.
 Harmless, but worth knowing why it appeared.
 
+## The testing folder
+
+Diagnostics that are not needed day to day live in `testing/`:
+
+| Path | Use |
+|---|---|
+| `testing/test_protocol.py` | `python testing/test_protocol.py` - the serial protocol against a model of the sketch, no hardware needed. |
+| `testing/diagnostic_patterns.py` | `python testing/diagnostic_patterns.py` writes two stray-hunt patterns to `testing/patterns/`. Each keeps some layers busy and the rest at exactly zero, so any light in the dark layers is data the chain garbled - they located a bad joint at the layer 2 to 3 handover. |
+| `testing/sd_check/` | A standalone sketch for testing the SD card module on its own. |
+
 ## Checking the SD card
 
-`sketch/sd_check/` is a standalone test: no FastLED, no cube, no protocol, so
+`testing/sd_check/` is a standalone test: no FastLED, no cube, no protocol, so
 whatever it reports is about the card and its wiring and nothing else. Flash it,
 open the Serial Monitor at 115200 and read the report. It tries `begin()` at 1,
 4 and 8 MHz in turn — if the slow one works and the fast one does not, the
