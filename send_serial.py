@@ -93,7 +93,11 @@ def available_ports():
 last_boot_warnings = []
 
 
-def _wait_for(ser, expected, timeout):
+class PreviewStopped(Exception):
+    """Raised inside a preview when its stop flag is set; preview_frames() handles it."""
+
+
+def _wait_for(ser, expected, timeout, stop=None):
     """Read lines until `expected` arrives; returns the other lines seen on the way.
 
     Anything that is not an ERR is passed over, so a WARN in the boot banner (a
@@ -102,6 +106,8 @@ def _wait_for(ser, expected, timeout):
     deadline = time.monotonic() + timeout
     responses = []
     while time.monotonic() < deadline:
+        if stop is not None and stop.is_set():      # checked every readline, ~0.25 s
+            raise PreviewStopped()
         response = ser.readline().decode("ascii", errors="replace").strip()
         if not response:
             continue
@@ -164,11 +170,15 @@ def _command(ser, payload):
     ser.flush()
 
 
-def _send_preview(ser, data):
-    for offset in range(0, len(data), FRAME_BYTES):
+def _send_preview(ser, data, stop=None, on_frame=None):
+    for index, offset in enumerate(range(0, len(data), FRAME_BYTES)):
+        if stop is not None and stop.is_set():
+            raise PreviewStopped()
         frame = data[offset:offset + FRAME_BYTES]
         _command(ser, b"CUBEP" + frame)
-        _wait_for(ser, "FRAME", max(5, int.from_bytes(frame[-2:], "big") / 1000 + 3))
+        _wait_for(ser, "FRAME", max(5, int.from_bytes(frame[-2:], "big") / 1000 + 3), stop)
+        if on_frame is not None:
+            on_frame(index)
 
 
 def _resume_random(ser):
@@ -197,21 +207,27 @@ def resume_random(ser):
     _resume_random(ser)
 
 
-def preview_frames(port, frames, after_preview=None):
+def preview_frames(port, frames, after_preview=None, stop=None, on_frame=None):
     """Display the frames on the physical cube without changing the SD card.
 
     The cube holds the last frame after the pattern finishes.  If after_preview
     is given it is called then; returning "again" replays the pattern, anything
     else resumes random SD playback.  The port stays open throughout, because
     reopening it would reset the Arduino.
+
+    stop, if given, is a threading.Event: set it from another thread and the
+    preview ends within about a quarter of a second, handing the cube back to
+    random playback. on_frame(index) is called as each frame finishes showing.
     """
     data = _encode_frames(frames)
     with _connect(port) as ser:
         try:
             while True:
-                _send_preview(ser, data)
+                _send_preview(ser, data, stop, on_frame)
                 if after_preview is None or after_preview() != "again":
                     break
+        except PreviewStopped:
+            pass                     # asked to stop: fall through to resume
         except Exception:
             try:
                 _resume_random(ser)  # Best effort: do not leave the cube frozen.

@@ -7,7 +7,9 @@ and send_serial.py for the link to the cube.
 import copy
 import importlib
 import json
+import queue
 import sys
+import threading
 import traceback
 import tkinter as tk
 from pathlib import Path
@@ -85,6 +87,8 @@ class Button:
         self.text = None
         self.onclickFunction = onclickFunction
         self.on_repeat = None        # step(n) for buttons that repeat while held
+        self.active = False          # drawn in amber, e.g. while a preview runs
+        self.activeColors = {"normal": "#f6c35c", "hover": "#eeae37", "pressed": "#7fc47f"}
         self.fillColors = {"normal": "#cfe2f5", "hover": "#a6c8ea", "pressed": "#7fc47f"}
         self.buttonSurface = pygame.Surface((width, height))
         self.buttonRect = pygame.Rect(x, y, width, height)
@@ -116,7 +120,8 @@ class Button:
         """Drawing only — clicks arrive as events, so nothing here has side effects."""
         hovered = self.buttonRect.collidepoint(pygame.mouse.get_pos())
         held = hovered and pygame.mouse.get_pressed(num_buttons=3)[0]
-        self.buttonSurface.fill(self.fillColors["pressed" if held else "hover" if hovered else "normal"])
+        colours = self.activeColors if self.active else self.fillColors
+        self.buttonSurface.fill(colours["pressed" if held else "hover" if hovered else "normal"])
         self.buttonSurface.blit(self.buttonSurf, [
             self.buttonRect.width / 2 - self.buttonSurf.get_rect().width / 2,
             self.buttonRect.height / 2 - self.buttonSurf.get_rect().height / 2,
@@ -377,6 +382,9 @@ def writeFile():
     save_pattern_file()
 
 def quit_pressed():
+    if globals().get("preview") is not None:
+        preview.stop.set()
+        preview.thread.join(timeout=5)
     pygame.quit()
     sys.exit()
 
@@ -575,19 +583,90 @@ def report_boot_warnings():
     status_message = ("Arduino: " + "; ".join(send_serial.last_boot_warnings)
                       if send_serial.last_boot_warnings else "")
 
+class PreviewRun:
+    """A cube preview running on a worker thread, so the editor stays live.
+
+    The worker only talks to the serial port. Everything on screen - the
+    window, the button, the Show again / Resume dialog - stays on the main
+    thread, which is the only one tkinter and pygame tolerate. The two meet
+    through a few plain attributes and a queue for the dialog's answer.
+    """
+    def __init__(self, port, pattern):
+        self.total = len(pattern)
+        self.stop = threading.Event()
+        self.frame = None            # index of the frame the cube is showing
+        self.followed = None         # the last of those the editor jumped to
+        self.error = None
+        self.asking = False          # the worker is waiting for again / resume
+        self.answers = queue.Queue()
+        self.thread = threading.Thread(target=self._run, args=(port, copy.deepcopy(pattern)),
+                                       daemon=True)
+        self.thread.start()
+
+    def _run(self, port, pattern):
+        try:
+            preview_frames(port, pattern, after_preview=self._ask,
+                           stop=self.stop, on_frame=self._shown)
+        except Exception as exc:     # shown by the main thread when it notices
+            self.error = exc
+
+    def _shown(self, index):
+        self.frame = index
+
+    def _ask(self):
+        self.asking = True           # the main loop opens the dialog and answers
+        return self.answers.get()
+
+    @property
+    def running(self):
+        return self.thread.is_alive()
+
+preview = None                       # the PreviewRun in progress, if any
+
 def previewCube():
-    port = arduino_port()
-    if not port:
+    """Start a preview on the cube - or, while one is running, stop it."""
+    global preview
+    if preview is not None:
+        preview.stop.set()
         return
-    try:
-        preview_frames(port, frames, after_preview=ask_after_preview)
-    except Exception as exc:
-        serial_error("LED cube preview failed", exc)
-        return                      # one dialog, not two: the error is the news
-    report_boot_warnings()
+    port = arduino_port()
+    if port:
+        preview = PreviewRun(port, frames)
+
+def service_preview():
+    """Main-loop side of a running preview. Called every frame."""
+    global preview
+    if preview is None:
+        return
+    if preview.asking:
+        preview.asking = False
+        preview.answers.put(ask_after_preview())
+    if preview.frame is not None and preview.frame != preview.followed:
+        preview.followed = preview.frame
+        show_frame(preview.frame)     # the window follows what the cube shows
+    if not preview.running:
+        finished, preview = preview, None
+        if finished.error is not None:
+            serial_error("LED cube preview failed", finished.error)
+        else:
+            report_boot_warnings()
+
+def preview_status():
+    """What the status line says while a preview runs; empty otherwise."""
+    if preview is None:
+        return ""
+    if preview.stop.is_set():
+        return "Stopping the preview..."
+    if preview.frame is None:
+        return "Connecting to the cube..."
+    return f"Previewing on the cube: frame {preview.frame} of {preview.total - 1}"
 
 def saveToArduinoSD():
     """Save locally first, then write the same name (8.3 form) to the Arduino SD card."""
+    if preview is not None:
+        messagebox.showinfo("LED cube", "A preview is using the cube. Stop it, then save.",
+                            parent=tk_root)
+        return
     port = arduino_port()
     if not port:
         return
@@ -658,11 +737,15 @@ def show_text_boxes():
     paint_text.update_text(f"Paint colour  R {r}  G {g}  B {b}      left-click paints, right-click switches off")
     for box in (frame_text, time_text, block_text, paint_text):
         box.draw(screen)
-    if status_message:                      # only takes up room when there is news
-        status_text.update_text(status_message)
+    message = preview_status() or status_message
+    if message:                             # only takes up room when there is news
+        status_text.update_text(message)
         status_text.draw(screen)
     # buttons whose labels follow the state
     button_registry["Play"].set_text("Stop" if run_frames else "Play")
+    preview_button = button_registry["Preview Cube"]
+    preview_button.active = preview is not None
+    preview_button.set_text("Stop preview" if preview is not None else "Preview Cube")
     button_registry["Fill layer"].set_text(f"Fill layer {current_layer}")
     button_registry["Clear layer"].set_text(f"Clear layer {current_layer}")
 
@@ -739,6 +822,7 @@ while True:
         if event.type == pygame.KEYDOWN:
             key_pressed(event.key)
     repeat_held_button()
+    service_preview()
     screen.fill((0, 0, 0))
     draw_cube()
     draw_palette()

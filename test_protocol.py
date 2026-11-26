@@ -173,6 +173,42 @@ def _connect_model(model):
     return model
 
 
+class StopAfter:
+    """Stands in for threading.Event: reports set from its (checks + 1)th look on."""
+    def __init__(self, checks):
+        self.left = checks
+
+    def is_set(self):
+        self.left -= 1
+        return self.left < 0
+
+
+def run_stopped(label, frame_ms, stop, expect_shown):
+    """Preview ten frames, stopping part-way; the cube must end up resumed."""
+    import threading
+    model = ModelArduino(sd_ok=True, pattern_count=3)
+    original_connect = send_serial._connect
+    send_serial._connect = lambda port: _connect_model(model)
+    shown = []
+    if stop == "after two frames":
+        stop = threading.Event()
+        on_frame = lambda i: (shown.append(i), stop.set() if i == 1 else None)
+    else:
+        on_frame = shown.append
+    try:
+        frames = [dict(f, time=frame_ms) for f in Scene(40).fade_in(ALL, RED, steps=10).frames]
+        send_serial.preview_frames("MODEL", frames, stop=stop, on_frame=on_frame)
+        ok = shown == expect_shown and not model.preview_mode
+        print(f"  {label}: {'OK' if ok else 'FAILED'} - frames shown {shown}, "
+              f"cube {'back on random playback' if not model.preview_mode else 'STILL IN PREVIEW'}")
+        return ok
+    except Exception as exc:
+        print(f"  {label}: FAILED -> {type(exc).__name__}: {exc}")
+        return False
+    finally:
+        send_serial._connect = original_connect
+
+
 if __name__ == "__main__":
     print("preview then resume:")
     ok = run(True, 3, "SD card with patterns")
@@ -183,4 +219,7 @@ if __name__ == "__main__":
     print("slow user: dialog left open past the 60 s preview hold:")
     ok &= run(True, 3, "SD card with patterns", dialog_ms=90_000)
     ok &= run(False, 0, "no SD card", dialog_ms=90_000)
+    print("stopping part-way:")
+    ok &= run_stopped("stop between frames", 40, "after two frames", [0, 1])
+    ok &= run_stopped("stop while a 3 s frame is still showing", 3000, StopAfter(1), [])
     print("ALL OK" if ok else "FAILURES ABOVE")

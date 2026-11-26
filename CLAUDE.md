@@ -75,6 +75,10 @@ RAM after any change that adds state.
   the editor's status line, never a dialog.
 - **`cube_serial.log`** beside the scripts records every command and reply.
   Read it before theorising about a serial fault.
+- **Cube previews run on a worker thread** (`PreviewRun`) so the editor stays
+  live and the preview can be stopped. The worker touches the serial port and
+  nothing else; tkinter and pygame calls - including the Show again / Resume
+  dialog - must stay on the main thread, reached through `service_preview()`.
 - The editor's buttons are **event-driven**. They must never poll the mouse: a
   blocking action (a preview, any modal dialog) would then fire whatever
   button sat under the cursor when it returned.

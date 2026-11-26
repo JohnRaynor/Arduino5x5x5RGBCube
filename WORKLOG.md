@@ -151,3 +151,15 @@ as it is built, and a breakpoint on that line steps frame by frame.
   click event. The mouse state is read only to end it — on release, on
   sliding off the button, or if the release event was lost.
 
+- Preview Cube can now be stopped. It used to block the editor for the whole
+  preview, so the window could not redraw and no button could be pressed. The
+  preview now runs on a worker thread (`PreviewRun`) that only touches the
+  serial port; the dialog and all drawing stay on the main thread. While it
+  runs the button is amber and reads "Stop preview", the status line counts
+  frames, and the editor follows the frame the cube is showing. Stop is checked
+  between frames and inside each wait, so it takes effect within about 0.25 s
+  even mid-way through a long frame, and the cube is handed back to random
+  playback. Save to SD is refused while a preview runs; quitting stops it first.
+- `send_serial.preview_frames()` gained `stop` and `on_frame`; test_protocol
+  covers stopping between frames and during a 3 s frame.
+
