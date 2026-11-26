@@ -53,6 +53,14 @@ def twinkle_colour():
     """twinkle() in a different random colour each time, with a little more overlap."""
     return twinkle(colour=RANDOMCOLOUR, decay=0.85)
 
+def twinkle_red_white_blue():
+    """twinkle() three times over: in reds, then white, then blues."""
+    scene = Scene(time_ms=30)
+    scene.frames.extend(twinkle(colour=RANDOMRED, count=20, decay=0.85))     # extend, not append:
+    scene.frames.extend(twinkle(colour=WHITE, count=20, decay=0.85))         # each call returns a list
+    scene.frames.extend(twinkle(colour=RANDOMBLUE, count=20, decay=0.85))    # of frames to add one by one
+    return scene.frames
+
 
 def test_fade_many(time_ms=5):
     """fade(): fade many regions at once, each to a different colour."""
@@ -370,6 +378,8 @@ GENERATORS = {
     "test_fade_many": test_fade_many,
     "twinkle": twinkle,
     "twinkle_colour": twinkle_colour,
+    "twinkle_red_white_blue": twinkle_red_white_blue
+
 }
 
 # The generators in more_patterns.py join the same list.
