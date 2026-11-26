@@ -256,7 +256,37 @@ def digital_rain(steps=150, time_ms=60, seed=7):
     return scene.frames
 
 
+# ------------------------------------------------------------- diagnostics --
+def _busy_and_dark(busy_layers, steps, time_ms, seed):
+    """Busy random colours on some layers, the rest held at exactly zero.
+
+    Any light at all in the dark layers is a fault: the cube was told to keep
+    them off, so whatever lights there is data the chain garbled on its way.
+    """
+    rng = random.Random(seed)
+    frames = []
+    for _ in range(steps):
+        frame = new_frame(time_ms)
+        for index, (x, y, z) in enumerate(XYZ):
+            if z in busy_layers:
+                frame["colours"][index] = [rng.randrange(256) for _ in range(3)]
+        frames.append(frame)
+    return frames
+
+
+def stray_hunt_top_dark(steps=150, time_ms=80, seed=11):
+    """Diagnostic: layers 0-2 busy, layers 3-4 must stay completely dark."""
+    return _busy_and_dark({0, 1, 2}, steps, time_ms, seed)
+
+
+def stray_hunt_bottom_dark(steps=150, time_ms=80, seed=12):
+    """Diagnostic: layers 3-4 busy, layers 0-2 must stay completely dark."""
+    return _busy_and_dark({3, 4}, steps, time_ms, seed)
+
+
 GENERATORS = {
+    "stray_hunt_top_dark": stray_hunt_top_dark,
+    "stray_hunt_bottom_dark": stray_hunt_bottom_dark,
     "plasma": plasma,
     "rainbow_swirl": rainbow_swirl,
     "lava_lamp": lava_lamp,
