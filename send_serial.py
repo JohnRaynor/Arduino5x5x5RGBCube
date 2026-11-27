@@ -30,7 +30,8 @@ from patterns import FRAME_BYTES, encode_frame
 BAUD = 115200
 PREAMBLE = bytes(64)   # zeros
 BLOCK = 64
-SD_STEM_CHARS = set("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
+MAX_SD_NAME = 32                     # must match MAX_NAME in rgb_cube.ino
+SD_FORBIDDEN = set('<>:"/\\|?*')       # characters FAT will not take in a name
 
 
 def _encode_frames(frames):
@@ -129,25 +130,38 @@ def _wait_for(ser, expected, timeout, stop=None):
 
 
 def _sd_name(filename):
-    name = filename.rsplit("/", 1)[-1].rsplit("\\", 1)[-1].upper()
-    if not name.endswith(".BIN"):
-        name += ".BIN"
-    stem, dot, extension = name.partition(".")
-    if (not dot or extension != "BIN" or not 1 <= len(stem) <= 8 or
-            len(name) > 12 or any(char not in SD_STEM_CHARS for char in stem)):
-        raise ValueError("Use an 8.3-style .BIN name, such as SPIRAL.BIN.")
+    """The name the file gets on the SD card: the local name, case kept.
+
+    SdFat on the Nano has long-filename support, so any name up to MAX_SD_NAME
+    characters (the .bin included) will do, in printable ASCII without the
+    characters FAT forbids and not ending in a space or a dot.
+    """
+    name = filename.rsplit("/", 1)[-1].rsplit("\\", 1)[-1].strip()
+    if not name.lower().endswith(".bin"):
+        name += ".bin"
+    stem = name[:-4]
+    if (not stem.strip(" .") or stem != stem.rstrip(" .") or len(name) > MAX_SD_NAME
+            or any(char in SD_FORBIDDEN or not " " <= char <= "~" for char in name)):
+        raise ValueError(f"SD names can be up to {MAX_SD_NAME} characters including .bin, "
+                         'without < > : " / \\ | ? *, and cannot end in a space or a dot.')
     return name
 
 
 def suggest_sd_name(local_path):
-    """Derive an 8.3 .BIN name from a local file name.
+    """The SD name for a local file: its own name, if the card can take it.
 
-    Returns (name, exact); exact is False when the stem had to be shortened or
-    had characters replaced, so the caller can let the user confirm it.
+    Returns (name, exact); exact is False when characters had to be replaced or
+    the name shortened, so the caller can let the user confirm it.
     """
-    stem = local_path.rsplit("/", 1)[-1].rsplit("\\", 1)[-1].rsplit(".", 1)[0].upper()
-    cleaned = "".join(char if char in SD_STEM_CHARS else "_" for char in stem)[:8] or "PATTERN"
-    return cleaned + ".BIN", cleaned == stem
+    original = local_path.rsplit("/", 1)[-1].rsplit("\\", 1)[-1]
+    if original.lower().endswith(".bin"):
+        stem, extension = original[:-4], original[-4:]
+    else:
+        stem, extension = original.rsplit(".", 1)[0], ".bin"
+    cleaned = "".join("_" if char in SD_FORBIDDEN or not " " <= char <= "~" else char for char in stem)
+    cleaned = cleaned[:MAX_SD_NAME - len(extension)].rstrip(" .") or "pattern"
+    name = cleaned + extension
+    return name, name == original
 
 
 def _connect(port):

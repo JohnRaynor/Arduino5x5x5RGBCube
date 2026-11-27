@@ -82,6 +82,10 @@ RAM after any change that adds state.
 - **Every generator carries a commented-out `cube_live.show` line** - inside the
   loop where frames are built one at a time, or a `for frame in ...` replay at
   the end where they come from fades. Add the same to any new generator.
+- **SD file names may be long** (SdFat has long-name support compiled in).
+  The limit is `MAX_NAME` in the sketch and `MAX_SD_NAME` in `send_serial.py`,
+  both 32 - change them together, and each character of `MAX_NAME` costs a
+  byte of the Nano's scarce RAM.
 - The editor's buttons are **event-driven**. They must never poll the mouse: a
   blocking action (a preview, any modal dialog) would then fire whatever
   button sat under the cursor when it returned.

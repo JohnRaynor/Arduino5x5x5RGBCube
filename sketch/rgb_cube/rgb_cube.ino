@@ -48,6 +48,7 @@
 // 1 if reads are still unreliable - playback needs 377 bytes per frame, so
 // even 1 MHz is many times faster than required.
 #define SD_SCK_SPEED    4
+#define MAX_NAME        32         // longest SD file name accepted, .bin included; = MAX_SD_NAME in send_serial.py
 #define SD_BLOCK        64         // bytes per NEXT acknowledgement during an SD write
 
 CRGB leds[NUM_LEDS];
@@ -75,7 +76,7 @@ ReceiveState receiveState = FIND_MAGIC;
 uint8_t magicPosition = 0;
 uint16_t receiveCount = 0;
 uint8_t fileNameLength = 0;
-char receivedName[13];
+char receivedName[MAX_NAME + 1];   // SdFat has long-name support, so any name up to MAX_NAME
 uint8_t sizeBytes[4];
 uint32_t bytesRemaining = 0;
 
@@ -199,7 +200,7 @@ void processReceivedByte(uint8_t value) {
     }
 
     case READ_NAME_LENGTH:
-      if (!value || value > 12) { serialError(F("bad filename")); resetReceive(); }
+      if (!value || value > MAX_NAME) { serialError(F("bad filename")); resetReceive(); }
       else { fileNameLength = value; receiveCount = 0; receiveState = READ_NAME; }
       break;
 

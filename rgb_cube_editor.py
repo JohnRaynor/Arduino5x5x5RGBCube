@@ -662,7 +662,7 @@ def preview_status():
     return f"Previewing on the cube: frame {preview.frame} of {preview.total - 1}"
 
 def saveToArduinoSD():
-    """Save locally first, then write the same name (8.3 form) to the Arduino SD card."""
+    """Save locally first, then write it to the Arduino SD card under the same name."""
     if preview is not None:
         messagebox.showinfo("LED cube", "A preview is using the cube. Stop it, then save.",
                             parent=tk_root)
@@ -674,9 +674,9 @@ def saveToArduinoSD():
     if local_file:
         sd_name, exact = suggest_sd_name(local_file)
     else:
-        sd_name, exact = "PATTERN.BIN", False
+        sd_name, exact = "pattern.bin", False
     if not exact:
-        sd_name = simpledialog.askstring("SD filename", "8.3 filename on SD card:", initialvalue=sd_name, parent=tk_root)
+        sd_name = simpledialog.askstring("SD filename", "Name on the SD card:", initialvalue=sd_name, parent=tk_root)
         if not sd_name:
             return
     try:

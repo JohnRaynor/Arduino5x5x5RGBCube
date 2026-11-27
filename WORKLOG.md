@@ -183,3 +183,11 @@ as it is built, and a breakpoint on that line steps frame by frame.
 - Every generator now carries a commented-out `cube_live.show` line, ready to
   uncomment and breakpoint.
 
+- Long file names for Save to SD. The 8.3 limit was ours, not the library's:
+  SdFat 2.3.0 has long-filename support on for the Nano. Raised the sketch's
+  name buffer to `MAX_NAME` 32 (+20 bytes RAM: 1472 used, 576 free; flash
+  unchanged) and replaced the PC's upper-casing 8.3 check with one that keeps
+  the local name and case, replacing only `< > : " / \ | ? *`. All 65 current
+  pattern names pass unchanged. Needs a reflash, then one long-named save
+  checked by reading the card on the PC.
+

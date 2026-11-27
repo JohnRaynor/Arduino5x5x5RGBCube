@@ -127,7 +127,7 @@ Everything else is the same as the 4×4×4 editor:
 | **Start** / **End** / **Clear** | Mark a block of frames; with no block set, block operations act on the current frame. |
 | **Copy** / **Cut** / **Paste** / **Reverse** | Copy the block; cut (delete) it; insert the copy after the current frame; reverse its play order. |
 | **Preview Cube** | Play the frames on the physical cube over serial. While it runs the button turns amber and reads **Stop preview** — press it to stop, and the cube goes back to random SD playback. The editor follows along, showing the frame the cube is on, and the status line counts through the pattern. Save to SD waits until the preview has finished. |
-| **Save to SD** | Save the pattern locally, then write it under the same 8.3 name to the cube's SD card. Needs the sketch. |
+| **Save to SD** | Save the pattern locally, then write it to the cube's SD card under the same name. Long names are fine, case kept, up to 32 characters including `.bin`; only the characters FAT forbids are replaced. Needs the sketch. Files copied onto the card with the PC can have any name too - the cube plays every file in the card's root folder, whatever it is called. |
 | **Playlist** | Choose several `.bin` files, order them, and load them as one pattern. Unlike Open File, this still replaces what is loaded. |
 | **Generate…** | Pick a generator from `make_sample_patterns.py` and insert its frames directly, no file needed — same insert-and-chain behaviour as Open File. The generator code is reloaded every time, so edit, save, click Generate. |
 
